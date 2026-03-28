@@ -13,28 +13,23 @@ ofuscacion/
 ├── requirements.txt
 ├── .gitignore
 ├── paper/
-│   ├── paper.tex          # LaTeX source
-│   └── referencias.bib    # Bibliography
-├── scripts/
-│   ├── 01_p9_ambivalence_verification.py
-│   ├── 02_p13_collision_exhaustive.py
-│   ├── 03_p13_collision_scaling.py
-│   ├── 04_fourier_spectral_analysis.py
-│   ├── 05_barrington_construction_verification.py
-│   ├── 06_contraction_operator.py
-│   ├── 07_proof_T_independence.py
-│   ├── 08_via3_conjunctions.py
-│   ├── 09_io_investigation.py
-│   ├── 10_spectral_contraction_proof.py
-│   ├── 11_eigenvector_analysis.py
-│   └── 12_level3_exhaustive_verification.py
-└── docs/
-    ├── P13_findings_and_corrected_security.md
-    ├── conclusiones_pruebas_empiricas.md
-    ├── paper_structural_destruction_v3.md
-    ├── proof_uniform_T_independence.md
-    ├── veredicto_y_roadmap.md
-    └── vias_de_investigacion_post_p13.md
+│   ├── Smain.tex          # LaTeX source
+│   ├── paper.tex           # Extended thesis source
+│   ├── referencias.bib     # Bibliography
+│   └── Spectral_Contraction_and_T_Independence_in_Barrington_Branching_Programs.pdf
+└── scripts/
+    ├── 01_p9_ambivalence_verification.py
+    ├── 02_p13_collision_exhaustive.py
+    ├── 03_p13_collision_scaling.py
+    ├── 04_fourier_spectral_analysis.py
+    ├── 05_barrington_construction_verification.py
+    ├── 06_contraction_operator.py
+    ├── 07_proof_T_independence.py
+    ├── 08_via3_conjunctions.py
+    ├── 09_io_investigation.py
+    ├── 10_spectral_contraction_proof.py
+    ├── 11_eigenvector_analysis.py
+    └── 12_level3_exhaustive_verification.py
 ```
 
 ## Scripts Overview
