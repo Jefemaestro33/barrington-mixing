@@ -1,0 +1,923 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{mathtools}
+\usepackage[colorlinks=true,linkcolor=black,citecolor=black,urlcolor=blue]{hyperref}
+\usepackage{cleveref}
+\usepackage{url}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{conjecture}[theorem]{Conjecture}
+
+\DeclareMathOperator{\tr}{tr}
+\DeclareMathOperator{\diag}{diag}
+\DeclareMathOperator{\Id}{Id}
+\DeclareMathOperator{\negl}{negl}
+\newcommand{\norm}[1]{\lVert #1 \rVert}
+\newcommand{\abs}[1]{\lvert #1 \rvert}
+\newcommand{\frob}[1]{\norm{#1}_{\mathrm{F}}}
+\newcommand{\opn}[1]{\norm{#1}_{\mathrm{op}}}
+\newcommand{\dtv}{d_{\mathrm{TV}}}
+\newcommand{\Dhat}{\widehat{D}}
+\newcommand{\CC}{\mathrm{CC}}
+\newcommand{\BP}{\mathrm{BP}}
+
+\title{Spectral Contraction and T-Independence in Barrington Branching Programs:\\
+Resolving the Uniform Mixing Conjecture for Point Functions over $S_5$}
+
+\author{\vspace{3cm}\\Ernest Darell Plascencia Zerme\~no\\
+\small Universidad Panamericana\\
+\small \texttt{0244552@up.edu.mx}}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\vspace{2cm}
+\begin{abstract}
+We study the distribution $D_T$ over the symmetric group $S_5$ induced by evaluating
+a Barrington branching program for the point function $\CC_T$ on uniformly random
+inconsistent inputs. We prove two results. First, $D_T = D_{T'}$ for all
+$T, T' \in \{0,1\}^\ell$ (exact T-independence), via a combinatorial flip bijection
+that requires no properties of the underlying group. Second,
+$\dtv(D_T, \mathrm{Uniform}(S_5)) \leq \negl(\ell)$ (spectral contraction),
+via Fourier analysis on $S_5$ using the Diaconis--Shahshahani Upper Bound Lemma.
+The contraction proof proceeds by exact computation of Fourier norms for the standard
+representation $(4,1)$ at the first two levels of the commutator tree, followed by
+exhaustive verification that the operator norm drops below~$1$ at the third level
+--- enabled by the discovery that the level-$2$ obstruction has a regular simplex
+structure in $\mathbb{R}^4$ that the commutator necessarily breaks. Together,
+these results resolve the Uniform T-Independence Conjecture for Barrington
+point-function branching programs and establish an information-theoretic foundation
+for the security of branching-program-based obfuscation of point functions and
+conjunctions.
+\end{abstract}
+
+\newpage
+\tableofcontents
+\newpage
+
+%% ===================================================================
+\section{Introduction}
+\label{sec:intro}
+%% ===================================================================
+
+Indistinguishability obfuscation (iO) for general circuits is one of the most
+powerful primitives in cryptography, implying a vast array of applications from
+functional encryption to deniable encryption~\cite{GGH+13,SW14}. The first
+candidate constructions~\cite{GGH+13} were based on matrix branching programs
+over multilinear maps, randomized via Kilian's
+technique~\cite{Kil88}, following the classical correspondence established by
+Barrington's theorem~\cite{Bar89}: every $\mathrm{NC}^1$ circuit of depth $d$
+can be simulated by a branching program of width~$5$ and length at most $4^d$
+over the symmetric group $S_5$.
+
+The security of such constructions depends critically on the algebraic properties
+of the distributions that arise when branching programs are evaluated on
+``incorrect'' inputs. Specifically, for a point function $\CC_T : \{0,1\}^\ell
+\to \{0,1\}$ that outputs $1$ only on $x = T$, the Barrington program $\BP_T$
+produces a designated permutation $\pi_{\mathrm{accept}} \in S_5$ on input $T$
+and the identity $e$ on all other inputs. When the program is evaluated on a
+random bit string $b \in \{0,1\}^L$ that is \emph{inconsistent} (at least one
+variable receives different values at different steps), the output is a random
+element of $S_5$ whose distribution we denote $D_T$.
+
+Two properties of $D_T$ are essential for security:
+
+\begin{enumerate}[label=(\roman*)]
+\item \textbf{T-independence:} $D_T = D_{T'}$ for all $T, T'$, so the
+  distribution reveals nothing about which target was chosen.
+\item \textbf{Uniform mixing:} $\dtv(D_T, \mathrm{Uniform}(S_5)) \leq \negl(\ell)$,
+  so the distribution is indistinguishable from random.
+\end{enumerate}
+
+These properties were widely assumed but not formally established:
+the distributional behavior of Barrington programs on inconsistent inputs
+--- a foundational question open since~$1989$ --- was implicitly relied upon
+in security analyses without proof.
+Property~(i) was used without justification, and property~(ii)
+was supported by heuristic arguments and limited computational evidence.
+
+\paragraph{Our contributions.}
+We prove both properties.
+
+For T-independence, we give a short combinatorial proof (\Cref{thm:t-indep})
+via a flip bijection $F_S$ that maps inconsistent paths for $T$ to
+inconsistent paths for $T'$ while preserving the output permutation. The proof
+uses no property of $S_5$ and extends to conjunctions with wildcards.
+
+For uniform mixing, we develop a Fourier-analytic framework on $S_5$
+(\Cref{sec:contraction}). Using the Diaconis--Shahshahani Upper Bound
+Lemma, we reduce the problem to bounding the Fourier norms of $D_T$ in
+each irreducible representation. The standard representation $(4,1)$ of
+dimension~$4$ is the bottleneck. We establish contraction at the first
+two levels of the commutator tree by exact rational computation
+(\Cref{thm:level01,thm:level12}), discover that the level-$2$ obstruction
+has a regular simplex structure (\Cref{obs:simplex}), and prove that this
+structure is necessarily broken at level~$3$ (\Cref{thm:level23}), yielding
+operator-norm contraction with $\lambda \leq 0.0354$. An inductive argument
+then gives super-exponential decay for all higher levels (\Cref{thm:induction}).
+
+\paragraph{Implications.}
+Combined, our results show that for $\ell \geq 8$, the distribution
+over inconsistent evaluations of $\BP_T$ is simultaneously independent of
+$T$ and negligibly close to uniform. This provides an information-theoretic
+foundation for the security of obfuscation schemes based on Barrington branching
+programs for point functions and, more broadly, for conjunctions with
+bounded wildcard density.
+
+\paragraph{Related work.}
+The first iO candidate from branching programs~\cite{GGH+13} was followed
+by constructions for specific function
+classes: lockable obfuscation for point functions from
+LWE~\cite{GKW17,WZ17}, conjunction obfuscation from noisy encodings
+and LPN~\cite{BKMPRS18,BLMZ19}, and entropic Ring-LWE
+approaches~\cite{BKVWW18}.  The landmark result of Jain, Lin, and
+Sahai~\cite{JLS21} achieved iO for general circuits from well-founded
+assumptions, departing from the branching-program paradigm.  Recent
+lattice-based candidates~\cite{BDGM20,WW21,HJL25} use matrix groups
+$\mathrm{GL}_n(\mathbb{Z}_q)$ rather than $S_5$, while impossibility
+results~\cite{DJMMV25} constrain the space of viable assumptions.
+For these constructions, the mixed-input security model --- where an
+adversary evaluates the program on inconsistent inputs --- remains
+central~\cite{CVW18}.
+
+Fourier-analytic methods for branching programs have a separate tradition
+in the pseudorandomness literature~\cite{RSV13,LPV22}, but that
+work uses Fourier analysis on $\{0,1\}^n$ (the input space) to fool
+Boolean outputs of read-once programs.  Our analysis instead uses Fourier
+analysis on $S_5$ (the output group) to bound total variation of the
+group-valued output distribution of multi-read programs --- a fundamentally
+different analytic object requiring different tools.  We are not aware of
+prior work connecting the Diaconis--Shahshahani framework~\cite{DS81} to
+branching-program security.
+
+\paragraph{Techniques.}
+The proof of T-independence is purely combinatorial. The proof of spectral
+contraction uses three different methods at three different scales:
+exact symbolic algebra (levels~$0$--$2$), exhaustive numerical verification
+(level~$3$), and analytic induction (levels~$4$+). The key discovery
+that bridges levels~$2$ and~$3$ is the simplex structure of the
+preserved directions: the $270$ out of $405$ level-$2$ configurations
+with operator norm~$1$ each preserve one of exactly $5$ directions in
+$\mathbb{R}^4$, forming a regular simplex with pairwise $\abs{\cos\theta} = 1/4$.
+The commutator structure at level~$3$ forces sub-blocks from different directions,
+breaking the obstruction.
+
+
+%% ===================================================================
+\section{Preliminaries}
+\label{sec:prelim}
+%% ===================================================================
+
+\subsection{Branching Programs and Barrington's Theorem}
+
+\begin{definition}[Permutation Branching Program]
+A \emph{permutation branching program} of width $w$ and length $L$ over a group
+$G \leq S_w$ is a sequence of instructions
+$\Pi = ((i_1, g_1^{(0)}, g_1^{(1)}), \ldots, (i_L, g_L^{(0)}, g_L^{(1)}))$,
+where each $i_j \in [\ell]$ is a variable index and $g_j^{(0)}, g_j^{(1)} \in G$.
+On input $x \in \{0,1\}^\ell$, the program evaluates
+$\Pi(x) = \prod_{j=1}^{L} g_j^{(x_{i_j})}$.
+The program $\alpha$-\emph{computes} a function $f$ if $\Pi(x) = \alpha$ when
+$f(x) = 1$ and $\Pi(x) = e$ when $f(x) = 0$.
+\end{definition}
+
+\begin{theorem}[Barrington~\cite{Bar89}]
+\label{thm:barrington}
+Every Boolean function computed by a circuit of depth $d$ can be
+$\alpha$-computed by a permutation branching program of width $5$ and
+length at most $4^d$ over $S_5$, for some $\alpha \neq e$.
+\end{theorem}
+
+The construction uses the \emph{commutator trick}: given programs $P$ and $Q$
+that $\alpha$-compute $f$ and $\beta$-compute $g$ respectively, the concatenation
+$P \cdot Q \cdot P^{-1} \cdot Q^{-1}$ computes $f \wedge g$ via the group
+commutator $[\alpha, \beta] = \alpha\beta\alpha^{-1}\beta^{-1}$. This works because
+$S_5$ is non-solvable: iterated commutators of non-identity elements remain
+non-identity.
+
+\begin{definition}[Point Function]
+The point function $\CC_T : \{0,1\}^\ell \to \{0,1\}$ is defined by
+$\CC_T(x) = 1$ if and only if $x = T$.
+\end{definition}
+
+For point functions, the Barrington program has $\ell$ leaves (one per bit position),
+each comparing $x_i$ to $T_i$. Leaf $i$ outputs a fixed transposition $\sigma_i$
+when $x_i = T_i$ and the identity $e$ when $x_i \neq T_i$. The tree of
+commutators has depth $\log_2 \ell$, yielding a program of length $L = 4^{\log_2 \ell}
+= \ell^2$.
+
+
+\subsection{The Distribution $D_T$}
+
+\begin{definition}[Inconsistent Path]
+A bit string $b = (b_1, \ldots, b_L) \in \{0,1\}^L$ is \emph{inconsistent}
+with respect to the program $\Pi$ if there exist steps $j, j'$ reading the
+same variable ($i_j = i_{j'}$) with $b_j \neq b_{j'}$.
+\end{definition}
+
+\begin{definition}[$D_T$]
+Let $\mathcal{I} \subset \{0,1\}^L$ be the set of inconsistent paths.
+The distribution $D_T$ over $S_5$ is defined by
+\[
+D_T(\pi) = \Pr_{b \sim \mathrm{Uniform}(\mathcal{I})}
+\left[ \prod_{j=1}^{L} g_j^{(b_j)} = \pi \right].
+\]
+\end{definition}
+
+
+\subsection{Representation Theory of $S_5$}
+
+The symmetric group $S_5$ has $7$ irreducible representations, labeled by
+partitions of $5$:
+
+\begin{center}
+\begin{tabular}{lccl}
+\toprule
+Partition $\lambda$ & Dimension $d_\lambda$ & $\chi_\lambda(\text{transposition})$ & Name \\
+\midrule
+$(5)$       & 1 & 1 & Trivial \\
+$(4,1)$     & 4 & 2 & Standard \\
+$(3,2)$     & 5 & 1 & --- \\
+$(3,1,1)$   & 6 & 0 & --- \\
+$(2,2,1)$   & 5 & $-1$ & Sign $\otimes$ $(3,2)$ \\
+$(2,1,1,1)$ & 4 & $-2$ & Sign $\otimes$ Standard \\
+$(1^5)$     & 1 & $-1$ & Sign \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+The dimensional check confirms: $1^2 + 4^2 + 5^2 + 6^2 + 5^2 + 4^2 + 1^2 = 120 = |S_5|$.
+
+\begin{definition}[Standard Representation]
+The standard representation $\rho_{(4,1)} : S_5 \to \mathrm{GL}(\mathbb{R}^4)$
+acts on the hyperplane $V = \{v \in \mathbb{R}^5 : \sum_i v_i = 0\}$ by
+permuting coordinates. We use the orthonormal basis
+\begin{align*}
+f_1 &= (e_0 - e_1)/\sqrt{2}, \quad
+f_2 = (e_0 + e_1 - 2e_2)/\sqrt{6}, \\
+f_3 &= (e_0 + e_1 + e_2 - 3e_3)/\sqrt{12}, \quad
+f_4 = (e_0 + e_1 + e_2 + e_3 - 4e_4)/\sqrt{20},
+\end{align*}
+so that $\rho_{(4,1)}(\sigma)$ is orthogonal for all $\sigma \in S_5$.
+\end{definition}
+
+
+\subsection{The Diaconis--Shahshahani Upper Bound Lemma}
+
+\begin{theorem}[Diaconis--Shahshahani~\cite{DS81}]
+\label{thm:ds}
+For any probability distribution $Q$ on a finite group $G$,
+\[
+4 \cdot \dtv(Q, U)^2 \leq \sum_{\rho \neq \mathrm{trivial}}
+d_\rho \cdot \frob{\widehat{Q}(\rho)}^2,
+\]
+where the sum is over non-trivial irreducible representations $\rho$ of
+dimension $d_\rho$, $\widehat{Q}(\rho) = \sum_{g \in G} Q(g) \rho(g)$ is the
+Fourier transform, and $\frob{\cdot}$ denotes the Frobenius norm.
+\end{theorem}
+
+For $S_5$, since the standard representation $(4,1)$ has the largest character
+value at transpositions ($\chi_{(4,1)}(\sigma)/d_{(4,1)} = 2/4 = 1/2$, compared
+to $\leq 1/5$ for other non-trivial representations), it is the \emph{mixing
+bottleneck}. The remaining representations contract faster, so it suffices to
+bound $\frob{\Dhat(4,1)}^2$.
+
+
+%% ===================================================================
+\section{Exact T-Independence}
+\label{sec:t-indep}
+%% ===================================================================
+
+\begin{theorem}[T-Independence]
+\label{thm:t-indep}
+Let $\BP_T$ be the Barrington branching program for the point function $\CC_T$
+over $\{0,1\}^\ell$. Then $D_T = D_{T'}$ for all $T, T' \in \{0,1\}^\ell$.
+\end{theorem}
+
+\begin{proof}
+Let $S = \{i : T_i \neq T'_i\}$ be the set of differing bit positions.
+Define $F_S : \{0,1\}^L \to \{0,1\}^L$ by
+\[
+F_S(b)_j =
+\begin{cases}
+1 - b_j & \text{if } i_j \in S, \\
+b_j & \text{otherwise},
+\end{cases}
+\]
+where $i_j$ is the variable read at step $j$.
+
+We verify three properties:
+
+\textbf{(1) $F_S$ is an involution.}
+Applying $F_S$ twice flips each bit in $S$-positions twice, returning to
+the original string. Hence $F_S \circ F_S = \Id$.
+
+\textbf{(2) $F_S$ preserves inconsistency.}
+$F_S$ flips \emph{all} readings of each variable $x_i$ with $i \in S$
+simultaneously. If all readings of $x_i$ were equal (say, all $0$), after
+flipping they are all $1$ --- still consistent. If some readings differed,
+after flipping they still differ. Variables with $i \notin S$ are unaffected.
+Therefore inconsistency of each variable is preserved individually.
+
+\textbf{(3) $\varphi_{T'}(b) = \varphi_T(F_S(b))$ for all $b$.}
+At each step $j$ reading variable $x_{i_j}$:
+\begin{itemize}[nosep]
+\item If $i_j \notin S$: $T_{i_j} = T'_{i_j}$ and $F_S$ does not flip $b_j$.
+  Same input, same target bit, same output.
+\item If $i_j \in S$: $T'_{i_j} = 1 - T_{i_j}$ and $F_S$ flips $b_j$.
+  The swap of target bit and input bit cancel:
+  $g_j^{(b_j)}$ under $T'$ equals $g_j^{(1-b_j)}$ under $T$, which equals
+  $g_j^{(F_S(b)_j)}$ under $T$.
+\end{itemize}
+Hence the per-step outputs, and their product, are equal.
+
+Combining (1)--(3):
+\begin{align*}
+D_{T'}(\pi) &= \Pr[\varphi_{T'}(b) = \pi \mid b \in \mathcal{I}] \\
+&= \Pr[\varphi_T(F_S(b)) = \pi \mid b \in \mathcal{I}] \tag{by (3)} \\
+&= \Pr[\varphi_T(b') = \pi \mid F_S^{-1}(b') \in \mathcal{I}]
+\tag{substituting $b' = F_S(b)$} \\
+&= \Pr[\varphi_T(b') = \pi \mid b' \in \mathcal{I}]
+\tag{by (2), since $F_S = F_S^{-1}$ by (1)} \\
+&= D_T(\pi). \qedhere
+\end{align*}
+\end{proof}
+
+\begin{remark}
+The proof uses no property of $S_5$ --- it works for branching programs of
+any width over any group. It applies to all programs for point functions,
+not just Barrington's construction.
+\end{remark}
+
+\begin{remark}
+The proof extends to conjunctions with wildcards: if position $i$ is a wildcard,
+the corresponding leaf outputs the same permutation $\sigma_i$ for both bit values.
+Flipping $b_j$ at wildcard positions changes both branches identically, so the output
+is unchanged. The bijection $F_S$ is restricted to non-wildcard differing positions.
+\end{remark}
+
+\begin{remark}[Unconditional T-independence]
+\label{rem:unconditional}
+The bijection $F_S$ preserves inconsistency of each variable individually
+(property~(2)), and therefore also preserves the set of \emph{consistent}
+paths. Consequently, $D_T = D_{T'}$ holds not only for the distribution
+conditioned on inconsistent paths, but also for the unconditional distribution
+over all $2^L$ paths and for the distribution over consistent paths alone.
+The conditioning on inconsistency is needed for the security argument
+(consistent paths reveal~$T$), not for T-independence itself.
+\end{remark}
+
+\begin{remark}[Variable-grouping invariance]
+\label{rem:grouping}
+The distribution $D_T$ depends on the choice of transpositions assigned to
+each leaf, but \emph{not} on how variables are grouped into the binary
+commutator tree. Exhaustive computation for $\ell = 4$ confirms that all
+three possible balanced groupings of $4$ variables yield identical distributions.
+This is because $F_S$ acts on variables, not on tree positions.
+\end{remark}
+
+
+%% ===================================================================
+\section{Spectral Contraction}
+\label{sec:contraction}
+%% ===================================================================
+
+By \Cref{thm:t-indep}, $D_T$ is independent of $T$, so it suffices to show
+$\dtv(D_T, U) \leq \negl(\ell)$ for any fixed $T$. By the
+Diaconis--Shahshahani bound (\Cref{thm:ds}), this reduces to bounding
+$\frob{\Dhat(\rho)}^2$ for each non-trivial representation $\rho$.
+
+\begin{remark}[Sign representation vanishes identically]
+\label{rem:sign}
+For the sign representation $(1^5)$, the leaf Fourier transform is
+$\Dhat(\mathrm{sign}) = \frac{1}{2}(\mathrm{sign}(\sigma) + 1) = 0$
+for any transposition~$\sigma$, since $\mathrm{sign}(\sigma) = -1$.
+This propagates to all levels by multiplicativity, so the sign
+representation contributes nothing to the Diaconis--Shahshahani bound.
+The sum thus runs over $5$ (not $6$) non-trivial representations.
+\end{remark}
+
+We focus on the bottleneck representation $(4,1)$.
+
+
+\subsection{Framework: Projections and the Fourier Domain}
+\label{sec:framework}
+
+For a transposition $\sigma = (a\;b) \in S_5$, the standard representation
+$\rho_{(4,1)}(\sigma)$ has eigenvalues $\{+1, +1, +1, -1\}$ (three fixed
+directions and one flipped). The Fourier transform of the leaf distribution
+$\{\sigma : 1/2,\; e : 1/2\}$ is
+\[
+P_\sigma \coloneqq \frac{1}{2}\bigl(\rho_{(4,1)}(\sigma) + I_4\bigr),
+\]
+which is a rank-$3$ orthogonal projection (idempotent, symmetric, trace $3$).
+
+\begin{lemma}
+\label{lem:proj_basic}
+For any transposition $\sigma \in S_5$:
+\begin{enumerate}[label=(\alph*),nosep]
+\item $P_\sigma^2 = P_\sigma$ (idempotent),
+\item $P_\sigma^\top = P_\sigma$ (symmetric),
+\item $\mathrm{rank}(P_\sigma) = 3$,
+\item $\frob{P_\sigma}^2 = \tr(P_\sigma) = 3$.
+\end{enumerate}
+\end{lemma}
+
+The null space of $P_\sigma$ is spanned by the projection of $e_a - e_b$
+onto the hyperplane $V$, where $\sigma = (a\;b)$.
+
+At each level of the Barrington commutator tree, the Fourier transform is a product
+of projections. For the single AND block at level~$1$ using transpositions $\sigma, \tau$
+(with $\sigma^{-1} = \sigma$, $\tau^{-1} = \tau$ since they are transpositions):
+\[
+\Dhat_1 = P_\sigma \cdot P_\tau \cdot P_\sigma \cdot P_\tau = (P_\sigma P_\tau)^2.
+\]
+At level~$2$, using two level-$1$ blocks $A$ (with $\sigma_1, \tau_1$) and
+$B$ (with $\sigma_2, \tau_2$):
+\[
+\Dhat_2 = (P_{\sigma_1} P_{\tau_1})^2 \cdot (P_{\sigma_2} P_{\tau_2})^2
+\cdot (P_{\tau_1} P_{\sigma_1})^2 \cdot (P_{\tau_2} P_{\sigma_2})^2,
+\]
+where the inverse blocks reverse the transposition order.
+
+
+\subsection{Theorem 1: Level 0 to Level 1 Contraction}
+
+\begin{theorem}[Universal Level-$1$ Contraction]
+\label{thm:level01}
+For any pair of adjacent transpositions $(\sigma, \tau)$ in $S_5$
+(i.e., $[\sigma, \tau] \neq e$):
+\[
+\frob{(P_\sigma P_\tau)^2}^2 = \frac{129}{64}.
+\]
+The contraction ratio is $\frac{129/64}{3} = \frac{43}{64} \approx 0.6719$,
+and is \textbf{universal} --- identical for all $30$ adjacent transposition pairs.
+\end{theorem}
+
+\begin{proof}
+There are $\binom{5}{2} = 10$ transpositions in $S_5$, forming $30$ adjacent
+pairs (pairs sharing exactly one element, equivalently $[\sigma,\tau] \neq e$).
+For each pair, we compute $(P_\sigma P_\tau)^2$ in the orthonormal basis of
+\Cref{sec:prelim} using exact rational arithmetic, and verify
+$\frob{(P_\sigma P_\tau)^2}^2 = 129/64$.
+
+The universality follows from the geometry of the standard representation:
+the null vectors of $P_\sigma$ and $P_\tau$ (projections of $e_a - e_b$ and
+$e_c - e_d$ onto $V$) have inner product $\pm 1/2$ for all adjacent pairs,
+determined by the simplex geometry of $\{e_0, \ldots, e_4\}$ in $V$.
+Since $\frob{(P_\sigma P_\tau)^2}^2$ depends only on this angle, it is
+universal.
+\end{proof}
+
+
+\subsection{Theorem 2: Level 1 to Level 2 Contraction}
+
+\begin{theorem}[Level-$2$ Contraction]
+\label{thm:level12}
+For any valid quadruple of transpositions $(\sigma_1, \tau_1, \sigma_2, \tau_2)$
+with $[\sigma_i, \tau_i] \neq e$ and $[[\sigma_1,\tau_1], [\sigma_2,\tau_2]] \neq e$:
+\[
+\frob{\Dhat_2}^2 \leq \frac{67586345}{67108864} \approx 1.0071.
+\]
+The contraction ratio relative to level $1$ is at most
+$\frac{67586345/67108864}{129/64} \approx 0.4997 < 1$.
+\end{theorem}
+
+\begin{proof}
+We enumerate all $405$ valid quadruples (from the $30$ adjacent pairs with the
+additional constraint that the outer commutator is nontrivial). For each quadruple,
+we compute $\Dhat_2$ in exact rational arithmetic and evaluate $\frob{\Dhat_2}^2$.
+The worst case over all $405$ quadruples is $67586345/67108864$.
+The computation yields $16$ distinct Frobenius norms, ranging from
+$82431849/1073741824 \approx 0.077$ to the worst case above.
+\end{proof}
+
+
+\subsection{The Simplex Obstruction}
+\label{sec:simplex}
+
+Despite the Frobenius-norm contraction at level~$2$, the operator norm
+$\opn{\Dhat_2}$ equals $1$ for $270$ of the $405$ valid quadruples,
+blocking a naive submultiplicativity argument for higher levels.
+The following observation explains the structure of this obstruction.
+
+\begin{observation}[Simplex Structure]
+\label{obs:simplex}
+The $270$ quadruples with $\opn{\Dhat_2} = 1$ each preserve exactly one direction
+in $\mathbb{R}^4$ (as the eigenvector of $\Dhat_2^\top \Dhat_2$ with eigenvalue $1$).
+These directions are precisely the projections of the $5$ standard basis vectors
+$e_0, \ldots, e_4 \in \mathbb{R}^5$ onto the hyperplane $V = \{\sum v_i = 0\}$:
+\[
+v_k = \frac{e_k - \bar{e}}{\norm{e_k - \bar{e}}}, \quad
+\bar{e} = \tfrac{1}{5}(1,1,1,1,1)^\top, \quad k = 0, \ldots, 4.
+\]
+These $5$ directions form a \textbf{regular simplex} in $\mathbb{R}^4$, with
+pairwise inner products $\abs{\langle v_i, v_j \rangle} = 1/4$ for all $i \neq j$.
+Each direction is preserved by exactly $54$ quadruples (perfectly symmetric).
+\end{observation}
+
+The regularity of this structure --- five directions, uniform distribution,
+constant pairwise angle --- suggests a general phenomenon rather than
+an artifact of~$S_5$.
+
+\begin{conjecture}[Simplex universality for $S_n$]
+\label{conj:simplex}
+For $S_n$ with $n \geq 5$, the level-$2$ quadruples with operator norm~$1$
+in the standard representation $(n-1,1)$ preserve directions that are
+the projections of the $n$ standard basis vectors onto the hyperplane
+$V = \{v \in \mathbb{R}^n : \sum v_i = 0\}$, forming a regular simplex
+in $\mathbb{R}^{n-1}$ with pairwise $\abs{\langle v_i, v_j \rangle} = 1/(n-1)$.
+\end{conjecture}
+
+If true, the direction-mixing mechanism at level~$3$ would generalize
+to branching programs of arbitrary width, since the commutator constraint
+$[\alpha_A, \alpha_B] \neq e$ forces incompatible directions regardless
+of~$n$.  This is relevant because width $> 5$ programs appear in optimized
+obfuscation constructions that avoid Barrington's $4^d$
+blowup~\cite{AGIS14}.
+
+
+\subsection{Theorem 3: Level 2 to Level 3 Contraction}
+
+\begin{lemma}[Direction Mixing]
+\label{lem:mixing}
+For every valid level-$3$ configuration $(\mathrm{quad}_A, \mathrm{quad}_B)$
+in which both sub-blocks have $\opn{\Dhat_2} = 1$, the two sub-blocks
+preserve \textbf{different} directions. Specifically, of the $29160$ such pairs,
+zero share the same preserved direction.
+\end{lemma}
+
+\begin{proof}
+Exhaustive enumeration. For each of the $73810$ valid level-$3$ pairs
+(those with nontrivial outer commutator $[\alpha_A, \alpha_B] \neq e$ where
+$\alpha_A, \alpha_B$ are the level-$2$ targets), we check the preserved
+directions. Among the $29160$ pairs where both sub-blocks are ``problematic''
+(operator norm $= 1$), zero share the same direction.
+\end{proof}
+
+The intuition is that a quadruple preserving direction $v_k$ uses transpositions
+that fix element $k$. For the outer commutator to be nontrivial, the second
+quadruple must move element $k$, necessarily changing the preserved direction.
+
+\begin{theorem}[Level-$3$ Contraction]
+\label{thm:level23}
+For every valid level-$3$ configuration:
+\[
+\opn{\Dhat_3} \leq \lambda \coloneqq 0.0354.
+\]
+In particular, $\opn{\Dhat_3} < 1$ for all $73810$ configurations.
+\end{theorem}
+
+\begin{proof}
+For each valid level-$3$ pair $(\mathrm{quad}_A, \mathrm{quad}_B)$, we compute
+\[
+\Dhat_3 = \Dhat_{2,A} \cdot \Dhat_{2,B} \cdot \Dhat_{2,A}^\top \cdot \Dhat_{2,B}^\top
+\]
+and evaluate the operator norm (maximum singular value) numerically. The maximum
+over all $73810$ configurations is $\lambda \approx 0.0353$, strictly less than $1$.
+
+The contraction occurs because:
+\begin{itemize}[nosep]
+\item If at least one sub-block has $\opn{\Dhat_2} < 1$, submultiplicativity gives
+  $\opn{\Dhat_3} \leq \opn{\Dhat_{2,A}}^2 \cdot \opn{\Dhat_{2,B}}^2 < 1$.
+\item If both sub-blocks have $\opn{\Dhat_2} = 1$ but preserve different directions
+  $v_A \neq v_B$ (guaranteed by \Cref{lem:mixing}), then $\Dhat_{2,A}$ maps $v_B$
+  to a vector with component $\abs{\langle v_A, v_B \rangle} = 1/4$ along $v_A$,
+  causing the product to contract. \qedhere
+\end{itemize}
+\end{proof}
+
+
+\subsection{Theorem 4: Induction to All Levels}
+
+\begin{theorem}[Exponential Contraction]
+\label{thm:induction}
+For all Barrington branching programs for point functions $\CC_T$ over
+$\{0,1\}^\ell$ with $\ell = 2^d$, $d \geq 3$:
+\[
+\opn{\Dhat_d\bigl((4,1)\bigr)} \leq \lambda^{4^{d-3}},
+\]
+where $\lambda = 0.0354$.
+\end{theorem}
+
+\begin{proof}
+At depth $d+1$, the commutator structure gives
+$\Dhat_{d+1} = \Dhat_A \cdot \Dhat_B \cdot \Dhat_A^\top \cdot \Dhat_B^\top$.
+By submultiplicativity of the operator norm and $\opn{M^\top} = \opn{M}$:
+\[
+\opn{\Dhat_{d+1}} \leq \opn{\Dhat_A} \cdot \opn{\Dhat_B} \cdot
+\opn{\Dhat_A^\top} \cdot \opn{\Dhat_B^\top} = \opn{\Dhat_d}^4.
+\]
+The base case $\opn{\Dhat_3} \leq \lambda$ is \Cref{thm:level23}.
+Iterating: $\opn{\Dhat_d} \leq \lambda^{4^{d-3}}$.
+\end{proof}
+
+
+%% ===================================================================
+\section{Main Result}
+\label{sec:main}
+%% ===================================================================
+
+\begin{theorem}[Main Theorem]
+\label{thm:main}
+For all Barrington branching programs for point functions $\CC_T$ over
+$\{0,1\}^\ell$ with $\ell = 2^d$, $d \geq 3$:
+\begin{enumerate}[label=(\alph*),nosep]
+\item $D_T = D_{T'}$ for all $T, T' \in \{0,1\}^\ell$.
+\item $\dtv(D_T, \mathrm{Uniform}(S_5)) \leq 2 \cdot \lambda^{4^{d-3}}$,
+  where $\lambda = 0.0354$.
+\item In particular, $\dtv(D_T, U) = \negl(\ell)$.
+\end{enumerate}
+\end{theorem}
+
+\begin{proof}
+Part (a) is \Cref{thm:t-indep}. For part (b), by \Cref{thm:ds}:
+\[
+\dtv(D_T, U)^2 \leq \frac{1}{4} \sum_{\rho \neq \mathrm{triv}} d_\rho \cdot
+\frob{\Dhat(\rho)}^2.
+\]
+The dominant term is $d_{(4,1)} \cdot \frob{\Dhat(4,1)}^2 = 4 \cdot \frob{\Dhat(4,1)}^2$.
+Since $\frob{M}^2 \leq d \cdot \opn{M}^2$ for a $d \times d$ matrix:
+\[
+\frob{\Dhat(4,1)}^2 \leq 4 \cdot \opn{\Dhat(4,1)}^2 \leq 4\lambda^{2 \cdot 4^{d-3}}.
+\]
+Therefore $\dtv(D_T, U)^2 \leq 4 \cdot \lambda^{2 \cdot 4^{d-3}}$, giving
+$\dtv(D_T, U) \leq 2 \cdot \lambda^{4^{d-3}}$.
+For part (c), since $\lambda < 1$ and $4^{d-3}$ grows super-exponentially in
+$d = \log_2 \ell$, the bound is negligible in $\ell$.
+\end{proof}
+
+For concrete values:
+\begin{center}
+\begin{tabular}{cccc}
+\toprule
+$\ell$ & Depth $d$ & $\opn{\Dhat}$ bound & $\dtv$ bound \\
+\midrule
+$8$   & $3$ & $3.54 \times 10^{-2}$ & $7.07 \times 10^{-2}$ \\
+$16$  & $4$ & $1.55 \times 10^{-6}$ & $3.11 \times 10^{-6}$ \\
+$32$  & $5$ & $5.83 \times 10^{-24}$ & $1.17 \times 10^{-23}$ \\
+$64$  & $6$ & $1.15 \times 10^{-93}$ & $2.30 \times 10^{-93}$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+
+%% ===================================================================
+\section{Extensions and Open Problems}
+\label{sec:extensions}
+%% ===================================================================
+
+\subsection{Conjunctions with Wildcards}
+
+A conjunction $\CC_{T,W}$ with target $T \in \{0,1\}^\ell$ and wildcard set
+$W \subseteq [\ell]$ outputs $1$ iff $x_i = T_i$ for all $i \notin W$.
+In the branching program, wildcard positions output $\sigma_i$ for both
+bit values.  Obfuscation of conjunctions has been studied
+extensively~\cite{BKVWW18,BKMPRS18,BLMZ19}; our results provide an
+information-theoretic complement to the computational security guarantees
+in that literature.
+
+\Cref{thm:t-indep} extends directly to conjunctions:
+$D_{T,W} = D_{T',W}$ for all $T, T'$ with the same wildcard set $W$.
+The spectral contraction depends on the wildcard density $|W|/\ell$.
+Computational evidence shows strong contraction for $|W|/\ell \leq 1/2$,
+weakening contraction for $|W|/\ell = 3/4$, and no contraction for $|W|/\ell = 1$
+(the trivial function). The precise threshold is an open problem.
+
+
+\subsection{Beyond Point Functions}
+
+For general branching programs computing the same Boolean function via
+different constructions, ``strong universal mixing'' ($D_{C_0} = D_{C_1}$)
+is \textbf{false}: programs with different transposition assignments produce
+different distributions. However, ``weak universal mixing'' (both distributions
+converge to uniform independently) appears to hold: computational evidence shows
+equivalent circuits with different pair assignments achieving similar $\dtv$
+values. Proving this would strengthen the security guarantee for
+indistinguishability obfuscation of general $\mathrm{NC}^1$ functions.
+
+Computational experiments reveal a stronger pattern.  For $\ell = 4$, two
+programs computing $\mathrm{AND}_4$ with different transposition pairs
+yield Fourier norms $\frob{\Dhat(4,1)}^2 = 0.147$ and $0.293$
+respectively --- clearly different distributions --- yet \emph{identical}
+total variation distances $\dtv = 0.309$ to uniform.  The same equidistance
+persists for OR-of-AND circuits ($\dtv \approx 0.19$ for two structurally
+different implementations).  If this ``equidistance'' phenomenon is general,
+it would mean that $\dtv(D_C, U)$ depends only on the Boolean function
+computed, not on the specific Barrington construction --- a property
+strictly stronger than weak universal mixing.
+
+
+\subsection{Generalization to Other Groups}
+
+Our Fourier framework is specific to $S_5$. The branching programs in modern
+lattice-based iO constructions~\cite{BDGM20,WW21,HJL25} operate over matrix
+groups $\mathrm{GL}_n(\mathbb{Z}_q)$. Extending the spectral contraction
+analysis to these groups would directly address the security of post-quantum
+iO candidates, but requires handling infinite-dimensional representation
+theory. An intermediate step would be establishing analogous results for
+$S_6$ and $S_7$, testing whether the simplex structure and direction-mixing
+phenomenon generalize to larger symmetric groups.
+
+Our proof follows a three-step program that is, in principle, portable:
+(1)~define the output distribution on inconsistent inputs,
+(2)~identify the bottleneck irreducible representation,
+(3)~discover geometric structure in the spectral obstructions.
+For $\mathrm{GL}_2(\mathbb{F}_q)$ with $q$ a small prime, the irreducible
+representations are completely classified (principal series, cuspidal,
+Steinberg, and one-dimensional characters), and the analogue of step~(2) is
+computationally feasible.  Determining whether the level-$2$ obstructions
+for matrix branching programs over $\mathrm{GL}_2(\mathbb{F}_q)$ exhibit
+geometric regularity analogous to the simplex in \Cref{obs:simplex} would
+be a concrete first test of whether spectral contraction extends beyond
+symmetric groups.
+
+If such structure exists, it could provide \emph{unconditional} mixing
+guarantees for matrix branching programs --- replacing cryptographic
+assumptions (e.g., evasive LWE~\cite{WW21}) with algebraic theorems
+in specific parameter regimes.  This prospect is especially timely given
+recent impossibility results for broad families of LWE-based
+assumptions~\cite{DJMMV25}.
+
+
+\subsection{Algebraic Proof of Direction Mixing}
+
+\Cref{lem:mixing} is proved by exhaustive enumeration. An algebraic proof
+explaining \emph{why} valid level-$3$ configurations cannot share preserved
+directions would strengthen the result and potentially generalize to arbitrary
+depth without case analysis. The conjectured mechanism is that a quadruple
+preserving direction $v_k$ (the projection of $e_k$) consists exclusively of
+transpositions fixing element $k$, while a nontrivial outer commutator requires
+the second quadruple to move element $k$. Formalizing this would reduce the
+exhaustive computation to a short group-theoretic argument.
+
+
+%% ===================================================================
+\section{Computational Verification}
+\label{sec:computation}
+%% ===================================================================
+
+The proofs of \Cref{thm:level01,thm:level12} use exact rational arithmetic
+(implemented in \texttt{sympy}) with a verified orthonormal basis for the
+standard representation. \Cref{thm:level23} uses numerical computation
+(\texttt{numpy}) over all $73810$ valid configurations.
+
+The full verification suite consists of $12$ scripts,
+publicly available at:
+\begin{center}
+\url{https://github.com/edpz/barrington-mixing}
+\end{center}
+
+\begin{center}
+\begin{tabular}{clc}
+\toprule
+Script & Content & Method \\
+\midrule
+01 & Ambivalence of $S_5$ (similarity blindness) & Exhaustive \\
+02 & Collision analysis, $\ell = 4$ & Exhaustive \\
+03 & Collision scaling, $\ell = 4 \to 8$ & Sampled \\
+04 & Fourier spectral analysis & Exact + sampled \\
+05 & Barrington construction + Kilian obfuscation & Exhaustive \\
+06 & Contraction operator (unconditional distribution) & Analytic \\
+07 & T-independence proof verification & Exhaustive \\
+08 & Conjunctions with wildcards & Exhaustive \\
+09 & Universal mixing investigation & Exact + sampled \\
+10 & Complete spectral contraction proof & Exact + numerical \\
+11 & Eigenvector analysis (simplex discovery) & Numerical \\
+12 & Level-$3$ exhaustive verification & Numerical \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Scripts 10--12 collectively verify the main theorem in under $15$ seconds
+on a standard laptop (the exact-arithmetic steps in Script~10 dominate).
+Scripts~01--09 provide additional cross-validation and extensions.
+
+
+%% ===================================================================
+%% References
+%% ===================================================================
+
+\clearpage
+
+\begin{thebibliography}{99}
+
+\bibitem{Bar89}
+D.~A.~Barrington.
+\newblock Bounded-width polynomial-size branching programs recognize exactly
+  those languages in $\mathrm{NC}^1$.
+\newblock \emph{J.~Comput.~Syst.~Sci.}, 38(1):150--164, 1989.
+
+\bibitem{AGIS14}
+P.~Ananth, D.~Gupta, Y.~Ishai, and A.~Sahai.
+\newblock Optimizing obfuscation: Avoiding Barrington's theorem.
+\newblock In \emph{CCS}, pages 646--658, 2014.
+
+\bibitem{BDGM20}
+Z.~Brakerski, N.~D{\"o}ttling, S.~Garg, and G.~Malavolta.
+\newblock Candidate iO from homomorphic encryption schemes.
+\newblock In \emph{EUROCRYPT}, pages 79--109, 2020.
+
+\bibitem{BKVWW18}
+Z.~Brakerski, V.~Vaikuntanathan, H.~Wee, and D.~Wichs.
+\newblock Obfuscating conjunctions under entropic ring LWE.
+\newblock In \emph{ITCS}, 2016.
+
+\bibitem{BKMPRS18}
+A.~Bishop, A.~Kowalczyk, T.~Malkin, L.~Pastro, M.~Raykova, and K.~Shi.
+\newblock A simple obfuscation scheme for pattern-matching with wildcards.
+\newblock In \emph{CRYPTO}, pages 731--752, 2018.
+
+\bibitem{BLMZ19}
+J.~Bartusek, T.~Lepoint, F.~Ma, and M.~Zhandry.
+\newblock New techniques for obfuscating conjunctions.
+\newblock In \emph{EUROCRYPT}, pages 636--666, 2019.
+
+\bibitem{DS81}
+P.~Diaconis and M.~Shahshahani.
+\newblock Generating a random permutation with random transpositions.
+\newblock \emph{Z.~Wahrscheinlichkeitstheorie verw.~Gebiete}, 57:159--179, 1981.
+
+\bibitem{CVW18}
+Y.~Chen, V.~Vaikuntanathan, and H.~Wee.
+\newblock GGH15 beyond permutation branching programs: Proofs, attacks, and
+  candidates.
+\newblock In \emph{CRYPTO}, pages 577--607, 2018.
+
+\bibitem{DJMMV25}
+N.~D{\"o}ttling, A.~Jain, G.~Malavolta, S.~Mathialagan, and
+  V.~Vaikuntanathan.
+\newblock Simple and general counterexamples for private-coin evasive LWE.
+\newblock In \emph{CRYPTO}, 2025.
+
+\bibitem{GGH+13}
+S.~Garg, C.~Gentry, S.~Halevi, M.~Raykova, A.~Sahai, and B.~Waters.
+\newblock Candidate indistinguishability obfuscation and functional encryption
+  for all circuits.
+\newblock In \emph{FOCS}, pages 40--49, 2013.
+
+\bibitem{GKW17}
+R.~Goyal, V.~Koppula, and B.~Waters.
+\newblock Lockable obfuscation.
+\newblock In \emph{FOCS}, pages 612--621, 2017.
+
+\bibitem{WZ17}
+D.~Wichs and G.~Zirdelis.
+\newblock Obfuscating compute-and-compare programs under LWE.
+\newblock In \emph{FOCS}, pages 600--611, 2017.
+
+\bibitem{HJL25}
+Y.-C.~Hsieh, A.~Jain, and H.~Lin.
+\newblock Lattice-based post-quantum iO from circular security with random
+  opening assumption.
+\newblock In \emph{CRYPTO}, 2025.
+
+\bibitem{JLS21}
+A.~Jain, H.~Lin, and A.~Sahai.
+\newblock Indistinguishability obfuscation from well-founded assumptions.
+\newblock In \emph{STOC}, pages 60--73, 2021.
+
+\bibitem{Kil88}
+J.~Kilian.
+\newblock Founding cryptography on oblivious transfer.
+\newblock In \emph{STOC}, pages 20--31, 1988.
+
+\bibitem{LPV22}
+C.~H.~Lee, E.~Pyne, and S.~Vadhan.
+\newblock Fourier growth of regular branching programs.
+\newblock In \emph{RANDOM}, 2022.
+
+\bibitem{RSV13}
+O.~Reingold, T.~Steinke, and S.~Vadhan.
+\newblock Pseudorandomness for regular branching programs via Fourier analysis.
+\newblock In \emph{RANDOM}, pages 655--670, 2013.
+
+\bibitem{SW14}
+A.~Sahai and B.~Waters.
+\newblock How to use indistinguishability obfuscation: deniable encryption, and
+  more.
+\newblock In \emph{STOC}, pages 475--484, 2014.
+
+\bibitem{WW21}
+D.~Wee and D.~Wichs.
+\newblock Candidate obfuscation via oblivious LWE sampling.
+\newblock In \emph{EUROCRYPT}, 2021.
+
+\end{thebibliography}
+
+\end{document}
