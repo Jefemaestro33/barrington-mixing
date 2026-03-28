@@ -1,0 +1,75 @@
+# Barrington Mixing: Obfuscation via Variable Transformations for FHE
+
+Computational verification scripts and paper source for *Encriptacion Homomorfica basada en Transformaciones de Variable*.
+
+This repository accompanies the research on a novel Fully Homomorphic Encryption (FHE) scheme based on nonlinear variable transformations, exploring connections to Barrington's theorem, spectral contraction, and indistinguishability obfuscation.
+
+## Repository Structure
+
+```
+ofuscacion/
+├── README.md
+├── LICENSE
+├── requirements.txt
+├── .gitignore
+├── paper/
+│   ├── paper.tex          # LaTeX source
+│   └── referencias.bib    # Bibliography
+├── scripts/
+│   ├── 01_p9_ambivalence_verification.py
+│   ├── 02_p13_collision_exhaustive.py
+│   ├── 03_p13_collision_scaling.py
+│   ├── 04_fourier_spectral_analysis.py
+│   ├── 05_barrington_construction_verification.py
+│   ├── 06_contraction_operator.py
+│   ├── 07_proof_T_independence.py
+│   ├── 08_via3_conjunctions.py
+│   ├── 09_io_investigation.py
+│   ├── 10_spectral_contraction_proof.py
+│   ├── 11_eigenvector_analysis.py
+│   └── 12_level3_exhaustive_verification.py
+└── docs/
+    ├── P13_findings_and_corrected_security.md
+    ├── conclusiones_pruebas_empiricas.md
+    ├── paper_structural_destruction_v3.md
+    ├── proof_uniform_T_independence.md
+    ├── veredicto_y_roadmap.md
+    └── vias_de_investigacion_post_p13.md
+```
+
+## Scripts Overview
+
+| # | Script | Description |
+|---|--------|-------------|
+| 01 | `p9_ambivalence_verification` | Verifies ambivalence properties of P9 permutation groups |
+| 02 | `p13_collision_exhaustive` | Exhaustive collision search over P13 |
+| 03 | `p13_collision_scaling` | Scaling behavior of collisions in P13 |
+| 04 | `fourier_spectral_analysis` | Fourier/spectral analysis of mixing operators |
+| 05 | `barrington_construction_verification` | Verifies Barrington's theorem constructions |
+| 06 | `contraction_operator` | Contraction operator analysis |
+| 07 | `proof_T_independence` | Proves T-independence of the scheme |
+| 08 | `via3_conjunctions` | Explores Via-3 conjunction constructions |
+| 09 | `io_investigation` | Indistinguishability obfuscation investigation |
+| 10 | `spectral_contraction_proof` | Spectral contraction proof verification |
+| 11 | `eigenvector_analysis` | Eigenvector structure analysis |
+| 12 | `level3_exhaustive_verification` | Level-3 exhaustive security verification |
+
+## Requirements
+
+```bash
+pip install -r requirements.txt
+```
+
+Python 3.9+ required. Dependencies: `numpy`, `sympy`.
+
+## Usage
+
+Run any script directly:
+
+```bash
+python scripts/01_p9_ambivalence_verification.py
+```
+
+## License
+
+MIT License. See [LICENSE](LICENSE).

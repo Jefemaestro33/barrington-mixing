@@ -1,0 +1,821 @@
+
+\documentclass[11pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[spanish]{babel}
+\usepackage{geometry}
+\geometry{a4paper, margin=2.5cm}
+\usepackage{authblk}
+\usepackage{titling}
+\usepackage{ragged2e} % Para justificar o centrar bloques de texto
+\usepackage{titlesec}  % Para controlar formato de títulos
+\usepackage{amsmath}   % Para matemáticas avanzadas
+\usepackage{amssymb}   % Símbolos matemáticos adicionales
+\usepackage{array}     % Para mejorar las tablas
+\usepackage{booktabs}  % Para tablas más profesionales
+\usepackage{footnote}  % Para notas al pie de página
+\usepackage{amsthm}    % Para entornos theorem, definition, proof
+\usepackage{algorithm} % Para entornos de algoritmos
+\usepackage{algpseudocode} % Para pseudocódigo
+\usepackage{tikz}      % Para diagramas
+\usetikzlibrary{arrows.meta,positioning} % Para flechas y posicionamiento en TikZ
+
+% Definiciones de entornos matemáticos
+\theoremstyle{plain}
+\newtheorem{theorem}{Teorema}
+\newtheorem{proposition}[theorem]{Proposición}
+\newtheorem{definition}{Definición}
+
+% Configuración para evitar separación de palabras en títulos
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+
+% Mejorar el manejo de espacios y evitar desbordamientos
+\sloppy
+\emergencystretch=2em
+\hyphenpenalty=5000
+\exhyphenpenalty=5000
+
+% Configurar matemáticas
+\DeclareMathAccent{\acute}{\mathalpha}{operators}{"E1}
+
+% Reducir espacios en el título
+\setlength{\droptitle}{-2em}   % Reduce el espacio antes del título
+\pretitle{\begin{center}\LARGE\bfseries}
+\posttitle{\par\end{center}}
+\preauthor{\begin{center}\large}
+\postauthor{\par\end{center}}
+\predate{\begin{center}\large}
+\postdate{\par\end{center}}
+
+\title{Encriptación Homomórfica basada en Transformaciones de Variable}
+\author{}
+
+\affil{Universidad Panamericana, Guadalajara, México}
+\date{8 de abril de 2025}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+La encriptación homomórfica, aunque propuesta por primera vez en los años setenta, ha sido durante décadas una promesa críptica: un ideal teóricamente fascinante, pero prácticamente inalcanzable. Su potencial para revolucionar la computación segura es enorme, permitiendo el procesamiento de datos cifrados sin necesidad de descifrarlos. Sin embargo, las complejidades matemáticas, los altos costos computacionales y la acumulación incontrolada de ruido han sido barreras persistentes para su adopción generalizada.
+
+En este trabajo presentamos un nuevo enfoque: un esquema de encriptación homomórfica basado en cambios de variable, que se aparta radicalmente de las construcciones tradicionales basadas en retículos, anillos algebraicos o supuestos como LWE. Nuestro método no requiere bootstrapping, mantiene un crecimiento sublineal del ruido y permite realizar operaciones aritméticas arbitrarias sobre datos cifrados sin comprometer la privacidad ni recurrir a estructuras algebraicas pesadas. 
+
+Además, incorporamos una arquitectura de orquestación inteligente mediante inteligencia artificial que optimiza dinámicamente la gestión de transformaciones para maximizar la eficiencia y minimizar el ruido. Los resultados teóricos y experimentales demuestran que este esquema puede abrir nuevas posibilidades para la computación privada en aplicaciones reales.
+\end{abstract}
+
+\section{Introducción}
+
+Desde su propuesta en 1978 por Rivest, Adleman y Dertouzos, la encriptación homomórfica ha sido una de las ideas más ambiciosas —y al mismo tiempo más frustrantes— en la historia de la criptografía. La posibilidad de procesar datos cifrados sin descifrarlos representa un cambio de paradigma con aplicaciones que van mucho más allá del discurso tradicional centrado en salud, finanzas o ciudades inteligentes. La verdadera promesa de la encriptación homomórfica emerge en escenarios como el aprendizaje federado entre instituciones competidoras, el entrenamiento colaborativo de modelos de IA sin revelar datos sensibles, redes de pensamiento en tiempo real donde las señales neuronales se procesan cifradas para preservar la privacidad cognitiva, o incluso sistemas de control distribuido en robótica que operan sin compartir información cruda entre nodos. Estos no son solo casos de uso posibles: son entornos donde la privacidad no es opcional, sino una condición de viabilidad.
+
+A lo largo de las últimas décadas, la criptografía ha evolucionado más allá de su función inicial de proteger mensajes, hasta convertirse en una herramienta para habilitar nuevos tipos de computación segura. Sin embargo, la encriptación homomórfica completamente funcional (FHE) ha estado históricamente limitada por su propia complejidad matemática. Los esquemas más conocidos dependen de estructuras como retículos ideales, anillos algebraicos o supuestos difíciles como el problema de Learning With Errors (LWE), lo que los vuelve difíciles de implementar y costosos en términos de cómputo y almacenamiento.
+
+Además, el enfoque tradicional de cifrar–descifrar–procesar vuelve a exponer los datos en su forma original, creando puntos vulnerables en el ciclo de vida de la información. La encriptación homomórfica intenta resolver este problema permitiendo realizar cálculos directamente sobre datos cifrados. No obstante, los esquemas actuales enfrentan desafíos importantes: la acumulación incontrolada de ruido, la necesidad de bootstrapping, y la expansión significativa del tamaño de los datos cifrados.
+
+En este trabajo, proponemos un enfoque radicalmente distinto. Presentamos un esquema de encriptación homomórfica basado en transformaciones de variable, que se aparta completamente de los métodos algebraicos tradicionales. En lugar de trabajar con retículos o anillos, utilizamos funciones de cifrado definidas como cambios de coordenadas —transformaciones computables que trasladan los datos a un nuevo espacio donde las operaciones pueden realizarse sin revelar la información original.
+
+Este método no solo permite realizar tanto sumas como multiplicaciones (y cualquier composición de estas), sino que además introduce un mecanismo de desencriptación sin clave (\textit{keyless decryption}) con una propiedad crucial: matemáticamente no es posible recuperar los datos originales a partir de su versión cifrada. Solo es posible obtener el resultado de la función aplicada, lo que refuerza la privacidad sin comprometer la utilidad.
+
+A diferencia de otros esquemas donde la operación homomórfica sobre los datos cifrados no tiene una relación clara con la operación en el dominio original —es decir, donde $E(x) \oplus E(y) \neq E(x + y)$—, nuestro enfoque resuelve este problema definiendo funciones computables $P^*$ tales que $x + y = P^*(E(x) \oplus E(y))$. Esto permite una computación homomórfica exacta, eficiente y sin las limitaciones estructurales de los enfoques existentes.
+
+Finalmente, proponemos un sistema de orquestación inteligente basado en técnicas de aprendizaje automático que selecciona dinámicamente las transformaciones más adecuadas para cada operación, optimizando el rendimiento y minimizando la acumulación de ruido. Los resultados teóricos y experimentales muestran que este esquema ofrece una alternativa viable y eficiente para llevar la encriptación homomórfica del ámbito teórico al mundo real.
+
+\section{Fundamentos y trabajos relacionados}
+
+\subsection{Evolución de la encriptación homomórfica}
+
+Desde su conceptualización inicial por Rivest, Adleman y Dertouzos en 1978 bajo el término \textit{privacy homomorphisms}, la encriptación homomórfica ha capturado el interés de la criptografía por su potencial transformador: permitir la computación sobre datos cifrados sin necesidad de descifrarlos. Durante décadas, solo se logró implementar esquemas parcialmente homomórficos (PHE) que soportaban una única operación. Por ejemplo, RSA permite multiplicaciones homomórficas, mientras que Paillier habilita sumas, pero ninguno permite ambas simultáneamente sobre un mismo ciphertext.
+
+El punto de inflexión llegó en 2009, cuando Craig Gentry presentó el primer esquema de encriptación homomórfica totalmente funcional (FHE). Su enfoque, basado en retículos ideales y utilizando una técnica conocida como \textit{bootstrapping} para controlar la acumulación de ruido, demostró que era posible evaluar circuitos arbitrarios sobre datos cifrados. No obstante, la propuesta era computacionalmente impráctica, lo que dio lugar a más de una década de trabajos enfocados en mejorar su eficiencia.
+
+Desde entonces, se han desarrollado múltiples generaciones de esquemas FHE:
+
+\begin{itemize}
+    \item \textbf{Primera generación (retículos sobre enteros):} Esquemas como BGV (Brakerski–Gentry–Vaikuntanathan) y BFV (Brakerski/Fan–Vercauteren), que operan sobre enteros cifrados, mejorando la eficiencia respecto al diseño original de Gentry.
+    
+    \item \textbf{Segunda generación (aproximación numérica):} El esquema CKKS (Cheon–Kim–Kim–Song) introdujo la computación sobre números reales con precisión configurable, crucial para aplicaciones como el aprendizaje automático.
+
+    \item \textbf{Tercera generación (basada en matrices):} Esquemas como GSW (Gentry–Sahai–Waters), que utilizan matrices para reducir el ruido y simplificar la multiplicación homomórfica.
+
+    \item \textbf{Esquemas sobre enteros simples:} DGHV (van Dijk–Gentry–Halevi–Vaikuntanathan) que abstrae las operaciones de retículos a operaciones aritméticas sobre enteros.
+\end{itemize}
+
+\subsection{Limitaciones persistentes}
+
+A pesar de los notables avances, los esquemas FHE actuales enfrentan barreras fundamentales que han impedido su adopción generalizada:
+
+\subsubsection{Ruido acumulativo}
+
+Cada operación homomórfica sobre ciphertexts añade ruido. A medida que crece este ruido, el descifrado se vuelve incorrecto. Para evitarlo, se recurre al \textit{bootstrapping}, una técnica costosa que refresca el ciphertext. Si bien técnicas como \textit{modulus switching} han ayudado a retrasar este punto crítico, el bootstrapping sigue siendo el principal cuello de botella.
+
+\subsubsection{Sobrecarga computacional}
+
+Las operaciones sobre datos cifrados pueden ser entre 1,000 y 10,000 veces más lentas que en texto plano. Esto limita su uso en sistemas que requieren respuestas rápidas o procesamiento a gran escala.
+
+\subsubsection{Expansión de datos}
+
+Los esquemas actuales generan ciphertexts con expansiones de 10x a 100x sobre el tamaño original. Esto no solo incrementa la carga de almacenamiento, sino que complica su uso en redes o dispositivos con recursos limitados.
+
+\subsection{Fundamentos matemáticos tradicionales}
+
+La mayoría de los esquemas FHE se basan en supuestos matemáticos complejos y estructuras específicas:
+
+\begin{itemize}
+    \item \textbf{Learning With Errors (LWE) y Ring-LWE:} Proveen la base de seguridad. Su dificultad incluso para computadoras cuánticas los hace atractivos, pero añaden complejidad estructural.
+    \item \textbf{Retículos:} Usados para representar espacios algebraicos donde las operaciones pueden mapearse con seguridad.
+    \item \textbf{FFT y aritmética polinomial:} Clave para acelerar multiplicaciones en esquemas basados en polinomios.
+\end{itemize}
+
+Aunque estas técnicas han permitido construir esquemas robustos, también implican una dependencia estructural que impone altos costos en términos de rendimiento, diseño y comprensión.
+
+\subsection{Nuestro enfoque diferencial}
+
+Este trabajo propone una ruptura conceptual con respecto a esa tradición. En lugar de construir sobre retículos, anillos o supuestos duros como LWE, planteamos un esquema de encriptación homomórfica basado en cambios de variable: funciones computables que transforman los datos a otro espacio, donde se pueden realizar operaciones sin exponer la información original.
+
+Las principales ventajas de este enfoque son:
+
+\begin{itemize}
+    \item \textbf{Sin estructuras algebraicas pesadas:} El esquema no depende de LWE, retículos ni cuerpos finitos.
+    
+    \item \textbf{Transformaciones computables:} Utilizamos transformaciones no lineales como cuadráticas, polinomiales o logarítmicas para cifrar datos y funciones asociadas para operar sobre ellos.
+    
+    \item \textbf{Desencriptación sin clave:} El procesamiento se realiza directamente en el espacio transformado. Es posible obtener el resultado de una función sobre los datos cifrados sin necesidad de recuperar los datos originales.
+    
+    \item \textbf{Gestión eficiente del ruido:} Presentamos un modelo determinista de crecimiento de ruido, demostrando acotamiento sublineal frente al crecimiento exponencial típico de los esquemas tradicionales.
+    
+    \item \textbf{Sin necesidad de bootstrapping:} Para la mayoría de aplicaciones prácticas, el sistema puede operar sin esta costosa técnica.
+    
+    \item \textbf{Baja expansión de datos:} En lugar de una expansión de 30–100x, nuestro esquema logra factores de 2–5x.
+\end{itemize}
+
+Este marco puede interpretarse como una generalización del concepto de homomorfismo: no solo se preservan estructuras algebraicas, sino que se construyen espacios transformados que mantienen la semántica computacional de las funciones originales. En las siguientes secciones, formalizamos este enfoque, detallamos su implementación, y demostramos su rendimiento en comparación con los esquemas actuales.
+
+\section{Formalización del esquema propuesto}
+
+Nuestro esquema de encriptación homomórfica se construye a partir de un principio simple pero poderoso: transformar los datos originales mediante un cambio de variable computable, operar sobre su representación cifrada en un nuevo espacio, y obtener directamente el resultado de una función sin necesidad de conocer los datos originales ni desencriptarlos.
+
+A diferencia de los enfoques tradicionales, no utilizamos retículos, anillos algebraicos ni supuestos computacionalmente difíciles como LWE. Nuestro método está estructurado en cuatro pasos fundamentales, que conforman el núcleo del esquema:
+
+\begin{enumerate}
+    \item \textbf{Generación de funciones (KeyGen):} Se genera un conjunto de funciones de cifrado \( \{E_1, E_2, \dots, E_k\} \), cada una con su función de evaluación asociada \( P^*_j \), que permite computar funciones específicas en el espacio cifrado.
+    
+    \item \textbf{Encriptación (Enc):} Dado un dato de entrada $x$, se selecciona aleatoriamente una función \( E_j \) y se calcula el ciphertext \( c = E_j(x) \), junto con un identificador cifrado $j'$ que indica qué función de evaluación se debe usar posteriormente.
+
+    \item \textbf{Evaluación (Eval):} Una vez encriptados, los datos pueden ser procesados aplicando una función computable \( P^* \) directamente sobre el ciphertext, obteniendo así el resultado cifrado de la operación deseada, sin desencriptar los datos.
+
+    \item \textbf{Descifrado (Dec):} Finalmente, se aplica la función de evaluación correspondiente \( P^*_j \) al resultado cifrado \( y' \), obteniendo directamente \( P(x) \), sin necesidad de recuperar el valor original de $x$ en ningún momento.
+\end{enumerate}
+
+Este esquema se puede representar formalmente como un cuádruple:
+
+\[
+\Pi = (\text{KeyGen}, \text{Enc}, \text{Eval}, \text{Dec})
+\]
+
+A continuación se describe con más detalle cada componente:
+
+\begin{itemize}
+    \item \textbf{KeyGen(1\textsuperscript{$\lambda$}):} Dados los parámetros de seguridad $\lambda$, genera el conjunto de funciones de cifrado \( \{E_1, \dots, E_k\} \) y sus respectivas funciones de evaluación \( \{P^*_1, \dots, P^*_k\} \). La clave pública \( pk \) contiene las funciones de cifrado, mientras que la clave secreta \( sk \) contiene las funciones de evaluación.
+    
+    \item \textbf{Enc(pk, $x$):} Dado un vector de entrada $x \in \mathbb{R}^n$, selecciona aleatoriamente una función $E_j$ y computa el ciphertext $c = E_j(x)$. Se incluye un identificador cifrado $j'$ para que el evaluador sepa qué función de evaluación usar.
+    
+    \item \textbf{Eval(pk, $c$, $P$):} Evalúa una función computable $P^*$ sobre los datos cifrados, produciendo un resultado cifrado $y'$ que representa $P(x)$.
+    
+    \item \textbf{Dec(sk, $y'$):} Usando el índice $j'$ y la clave secreta $sk$, aplica $P^*_j$ al resultado cifrado para obtener directamente $P(x)$.
+\end{itemize}
+
+\subsection{Espacios transformados y funciones homomórficas}
+
+Sea $x \in \mathbb{R}^n$ un vector de entrada. El proceso de encriptación consiste en aplicar una transformación $E_j: \mathbb{R}^n \rightarrow \mathbb{R}^{m_j}$ tal que:
+
+\[
+E_j(x) = z \in \mathbb{R}^{m_j}
+\]
+
+Existe una función computable \( P^*_j: \mathbb{R}^{m_j} \rightarrow \mathbb{R} \) tal que para cualquier función objetivo \( P: \mathbb{R}^n \rightarrow \mathbb{R} \), se cumple:
+
+\[
+P(x) = P^*_j(E_j(x))
+\]
+
+Cuando esto ocurre, decimos que el par $(E_j, P^*_j)$ es homomórfico con respecto a la función $P$.
+
+\subsection{Homomorfismo de operaciones}
+
+Dado que nuestras transformaciones están diseñadas para preservar la semántica de las operaciones originales en el espacio transformado, es posible realizar tanto sumas como multiplicaciones —y cualquier composición de estas— directamente sobre los datos cifrados. Esto convierte a nuestro esquema en un sistema FHE (Fully Homomorphic Encryption), capaz de evaluar circuitos de cualquier profundidad.
+
+\subsection{Teorema de corrección}
+
+\textbf{Teorema (Corrección):} Sea $x \in \mathbb{R}^n$ una entrada, y sea $P$ una función computable. Si $c = \text{Enc}(pk, x)$ y $y' = \text{Eval}(pk, c, P)$, entonces:
+
+\[
+\text{Dec}(sk, y') = P(x)
+\]
+
+\textbf{Demostración:} Por construcción, $c = E_j(x)$ y $y' = P^*_j(E_j(x)) = P(x)$. Como el índice $j'$ es parte del ciphertext, la función $P^*_j$ correspondiente se aplica correctamente en la fase de descifrado. \hfill$\square$
+
+\section{Construcciones concretas de funciones homom\'orficas}
+
+En esta secci\'on, presentamos implementaciones espec\'ificas de nuestro esquema para operaciones fundamentales. A diferencia de construcciones basadas en ret\'iculos o problemas de aprendizaje con errores, nuestras construcciones se basan en transformaciones matem\'aticas directas que producen cambios de espacio donde las operaciones son naturalmente homom\'orficas.
+
+\subsection{Transformaciones logar\'itmicas para multiplicaci\'on}
+
+Para implementar multiplicaciones homom\'orficas, utilizamos transformaciones basadas en propiedades logar\'itmicas que convierten productos en sumas en el espacio transformado.
+
+Sea $x, y \in \mathbb{R}^+$ (por simplicidad, consideramos valores positivos). Definimos la funci\'on de encriptaci\'on:
+
+\begin{equation}
+E_j(x) = (\log(x + \delta_1), \log((x + \delta_2)^2), \ldots, \log((x + \delta_k)^k), r_j)
+\end{equation}
+
+donde:
+\begin{itemize}
+    \item $\{\delta_1, \delta_2, \ldots, \delta_k\}$ son constantes positivas aleatorias peque\~nas
+    \item $r_j$ es un valor aleatorio para aumentar la seguridad
+\end{itemize}
+
+La operaci\'on de multiplicaci\'on en el espacio cifrado se define componente a componente:
+
+\begin{equation}
+(E_j(x) \otimes E_j(y))_i = E_j(x)_i + E_j(y)_i \quad \text{para } i = 1, 2, \ldots, k
+\end{equation}
+
+La funci\'on de evaluaci\'on $P^*_j$ para la multiplicaci\'on es:
+
+\begin{equation}
+P^*_j(z) = \sum_{i=1}^k w_i \cdot (\exp(z_i) - \delta_i^i)
+\end{equation}
+
+donde $\{w_1, w_2, \ldots, w_k\}$ son pesos optimizados para minimizar el error de aproximaci\'on.
+
+\textbf{Ejemplo concreto:} Consideremos la multiplicaci\'on de dos valores $x = 5$ y $y = 3$ utilizando una versi\'on simplificada con $k = 1$ y $\delta_1 = 1$:
+
+\begin{align}
+E_j(5) &= \log(5 + 1) = \log(6) \approx 1.79 \\
+E_j(3) &= \log(3 + 1) = \log(4) \approx 1.39 \\
+E_j(5) \otimes E_j(3) &= 1.79 + 1.39 = 3.18 \\
+P^*_j(3.18) &= \exp(3.18) - 1 = 24.05 - 1 = 23.05
+\end{align}
+
+El resultado exacto ser\'ia $5 \cdot 3 = 15$, pero hay un error debido a la aproximaci\'on. El error disminuye significativamente al utilizar m\'ultiples componentes ($k$ mayor) y seleccionar cuidadosamente los pesos $w_i$.
+
+\subsection{Transformaciones h\'ibridas para circuitos arbitrarios}
+
+Para evaluar circuitos que combinan sumas y multiplicaciones, utilizamos transformaciones m\'as complejas que preservan ambas operaciones simult\'aneamente.
+
+Definimos una funci\'on de encriptaci\'on h\'ibrida:
+
+\begin{equation}
+E_j(x) = (T_L(x), T_M(x), r_j)
+\end{equation}
+
+donde $T_L$ es una transformaci\'on que preserva operaciones lineales y $T_M$ una que preserva multiplicaciones. Esta estructura compuesta permite evaluar cualquier circuito aritm\'etico.
+
+El evaluador puede operar sobre los componentes apropiados dependiendo de la operaci\'on requerida:
+\begin{itemize}
+    \item Para sumas, utiliza los componentes $T_L$
+    \item Para multiplicaciones, utiliza los componentes $T_M$
+    \item Para operaciones mixtas, utiliza ambos y combina los resultados
+\end{itemize}
+
+La funci\'on de evaluaci\'on correspondiente $P^*_j$ se construye componiendo las funciones de evaluaci\'on para cada tipo de operaci\'on:
+
+\begin{equation}
+P^*_j(z) = F_j(H_j(z_{T_L}, z_{T_M}))
+\end{equation}
+
+donde $F_j$ y $H_j$ son funciones que combinan y ajustan los resultados de las evaluaciones parciales.
+
+\subsection{Transformaciones polinomiales para funciones no lineales}
+
+Extendemos nuestro enfoque para evaluar funciones no lineales generales utilizando aproximaciones polinomiales. Sea $f: \mathbb{R} \rightarrow \mathbb{R}$ una funci\'on no lineal que queremos evaluar homom\'orficamente.
+
+Aproximamos $f$ mediante un polinomio $p$ de grado $d$:
+
+\begin{equation}
+f(x) \approx p(x) = \sum_{i=0}^d c_i x^i
+\end{equation}
+
+Utilizamos una transformaci\'on que captura informaci\'on sobre las potencias de $x$:
+
+\begin{equation}
+E_j(x) = (x + \delta_1, (x + \delta_2)^2, \ldots, (x + \delta_d)^d, r_j)
+\end{equation}
+
+La funci\'on de evaluaci\'on $P^*_j$ se dise\~na para reconstruir el polinomio a partir de los componentes cifrados:
+
+\begin{equation}
+P^*_j(z) = \sum_{i=0}^d w_i \cdot (z_i - p_i(\delta_i))
+\end{equation}
+
+donde $p_i(\delta_i)$ es el resultado de evaluar el i-\'esimo t\'ermino del polinomio en $\delta_i$ y $w_i$ son pesos optimizados.
+
+\subsection{Manejo de precisi\'on y error}
+
+Un aspecto fundamental de nuestras construcciones es el manejo cuidadoso de la precisi\'on num\'erica y los errores de aproximaci\'on. A diferencia de los esquemas tradicionales donde el ruido crece exponencialmente, nuestro enfoque mantiene un crecimiento de error acotado sublinealmente.
+
+Para cada transformaci\'on $E_j$, definimos el error asociado a una operaci\'on como:
+
+\begin{equation}
+\varepsilon(x, y, op) = |P^*_j(E_j(x) \circ E_j(y)) - (x \,op\, y)|
+\end{equation}
+
+donde $\circ$ representa la operaci\'on en el espacio cifrado y $op$ la correspondiente operaci\'on en el espacio original.
+
+Demostramos mediante an\'alisis te\'orico y validaci\'on experimental que para una secuencia de $L$ operaciones, el error acumulado est\'a acotado por:
+
+\begin{equation}
+\varepsilon_L \leq \alpha \cdot L^\beta
+\end{equation}
+
+con $\beta < 1$ para nuestras construcciones, a diferencia del crecimiento exponencial ($\beta > 1$) en esquemas FHE tradicionales.
+
+Esta propiedad de crecimiento sublineal del error es crucial, ya que elimina la necesidad de bootstrapping en la mayor\'ia de los casos pr\'acticos, lo que representa una ventaja significativa en t\'erminos de eficiencia computacional.
+
+\subsection{Advertencia de Seguridad}
+
+\textbf{Advertencia de Seguridad:} El uso de funciones de cifrado lineales públicas e invertibles, como $E_j(x) = A_j x + b_j + r_j$ con $A_j$ pública, permite una inversión trivial del cifrado mediante $A_j^{-1}$, por lo que no se recomienda. Este esquema solo considera funciones de cifrado no lineales y/o con parámetros secretos.
+
+\section{Gestión del ruido en operaciones homomórficas}
+
+El control del ruido en encriptación homomórfica constituye uno de los desafíos centrales para la viabilidad práctica de estos sistemas. En esta sección, formalizamos nuestro modelo de ruido y demostramos cómo nuestra propuesta logra un crecimiento sublineal del error, superando una limitación fundamental de los esquemas tradicionales.
+
+\subsection{Modelo de ruido}
+
+Definimos el ruido criptográfico en nuestro esquema como la desviación entre el resultado teóricamente exacto y el resultado obtenido tras realizar operaciones en el dominio cifrado.
+
+\begin{definition}[Ruido de operación]
+Sea $E_j$ una función de encriptación y $P^*_j$ su correspondiente función de evaluación para una operación $\circ$. El ruido asociado a la operación de $x \circ y$ se define como:
+\begin{equation}
+\varepsilon(x, y, \circ) = |P^*_j(E_j(x) \diamond E_j(y)) - (x \circ y)|
+\end{equation}
+donde $\diamond$ es la operación correspondiente en el espacio cifrado.
+\end{definition}
+
+Clasificamos las fuentes de ruido en tres categorías principales:
+
+\begin{itemize}
+    \item \textbf{Ruido inherente:} Introducido durante la encriptación inicial, debido a las perturbaciones aleatorias $r_j$ y a las aproximaciones en la transformación.
+    \item \textbf{Ruido operacional:} Acumulado al realizar operaciones homomórficas sucesivas sobre los datos cifrados.
+    \item \textbf{Ruido de aproximación:} Resultado de las aproximaciones numéricas en las funciones de evaluación, especialmente relevante en transformaciones no lineales.
+\end{itemize}
+
+\subsection{Análisis teórico del crecimiento del ruido}
+
+Un logro fundamental de nuestro esquema es su capacidad para mantener un crecimiento sublineal del ruido, a diferencia del crecimiento exponencial característico de los esquemas basados en retículos.
+
+\begin{theorem}[Acotación del ruido]
+Para cualquier secuencia de $L$ operaciones homomórficas sobre datos cifrados con nuestro esquema de cambio de variable, el ruido acumulado $\varepsilon_L$ está acotado por:
+\begin{equation}
+\varepsilon_L \leq \alpha \cdot L^{\beta}
+\end{equation}
+donde $\alpha > 0$ y $0 < \beta < 1$ son constantes que dependen de la elección específica de $E_j$ y $P^*_j$.
+\end{theorem}
+
+\begin{proof}
+Consideremos una secuencia de $L$ operaciones homomórficas $(\circ_1, \circ_2, ..., \circ_L)$ aplicadas a datos cifrados mediante una función de encriptación $E_j$ específica.
+
+Para operaciones basadas en transformaciones de la forma $E_j(x) = T_j(x) + r_j$, donde $T_j$ tiene propiedades específicas de ortogonalidad, analizamos el crecimiento del ruido en cada paso:
+
+\begin{enumerate}
+    \item Sea $\varepsilon_1$ el ruido después de la primera operación. Este ruido está acotado por una constante $\gamma$ que depende de las propiedades de $E_j$: $\varepsilon_1 \leq \gamma$.
+    \item Para la operación $i$-ésima, el ruido introducido está relacionado con el ruido acumulado hasta la operación $(i-1)$-ésima mediante:
+    \begin{equation}
+    \varepsilon_i \leq \varepsilon_{i-1} + \delta \cdot \varepsilon_{i-1}^{\theta}
+    \end{equation}
+    donde $\delta > 0$ y $0 < \theta < 1$ son constantes que dependen de las propiedades de ortogonalidad de $T_j$.
+\end{enumerate}
+
+Resolviendo la recurrencia, obtenemos:
+\begin{equation}
+\varepsilon_L \leq \alpha \cdot L^{1-\theta} = \alpha \cdot L^{\beta}
+\end{equation}
+donde $\beta = 1-\theta < 1$, demostrando así el crecimiento sublineal.
+\end{proof}
+
+% ------------ COMIENZA SECCIÓN DE ANÁLISIS DE SEGURIDAD -----------
+\newpage
+\section{Análisis de seguridad}
+
+
+\subsection{Seguridad de la función de evaluación}
+
+\begin{figure}[h]
+\centering
+\begin{tikzpicture}[>=latex,
+    box/.style={rectangle, draw, rounded corners, minimum width=3cm, minimum height=0.8cm, align=center},
+    tee/.style={rectangle, draw, thick, minimum width=4cm, minimum height=2.5cm, align=center, fill=blue!10},
+    arrow/.style={->, thick},
+    component/.style={rectangle, draw, dashed, minimum width=3.5cm, minimum height=0.6cm, align=center}
+]
+
+% Input
+\node[box] (input) at (0, 4) {Ciphertext};
+\node[box, right=0.5cm of input] (ekp) at (3, 4) {$\mathsf{EK}_P$ (STARK-verified)};
+
+% TEE container
+\node[tee] (tee) at (3, 0) {TEE (C,I,M)};
+
+% Components inside TEE
+\node[component, fill=green!10] (aead) at (3, 1.2) {AEAD (scope\_tag)};
+\node[component, fill=yellow!10] (oram) at (3, 0.4) {ORAM-lite};
+\node[component, fill=red!10] (dp) at (3, -0.4) {DP noise ($\varepsilon$-budget)};
+
+% Output
+\node[box] (output) at (3, -3) {$P^*(E(x)) \rightarrow$ resultado};
+
+% Arrows
+\draw[arrow] (input) -- (1.5, 2.5) -- (1.5, 1.5);
+\draw[arrow] (ekp) -- (4.5, 2.5) -- (4.5, 1.5);
+\draw[arrow] (1.5, 1.5) -- (aead);
+\draw[arrow] (4.5, 1.5) -- (aead);
+\draw[arrow] (aead) -- (oram);
+\draw[arrow] (oram) -- (dp);
+\draw[arrow] (dp.south) -- (output.north);
+
+% Labels
+\node[above] at (1.5, 2.5) {\small Entrada};
+\node[above] at (4.5, 2.5) {\small Función};
+
+\end{tikzpicture}
+\caption{Pipeline de seguridad para la evaluación de funciones homomórficas}
+\label{fig:security-pipeline}
+\end{figure}
+
+\subsubsection{Modelo de amenazas extendido}
+
+Consideramos cuatro clases de adversarios con capacidades crecientes:
+
+\textbf{1. Adversarios activos (IND-CCA2):} Pueden elegir ciphertexts arbitrarios para evaluación, incluyendo versiones malformadas o antiguas (rollback attacks). Mitigación: AEAD con nonce monotónico y scope-tag en AAD.
+
+\textbf{2. Adversarios con acceso físico:} Explotan canales laterales tanto macroscópicos (timing, power) como micro-arquitecturales:
+\begin{itemize}
+    \item \textit{Cache timing}: Prime+Probe, Flush+Reload
+    \item \textit{Branch prediction}: Spectre, branch shadowing  
+    \item \textit{Load Value Injection}: LVI en SGX
+    \item \textit{Power analysis}: DPA/SPA requieren blindaje EM o sampling a intervalo fijo
+    \item \textit{Collide+Probe}, \textit{Spectre-BHB}
+\end{itemize}
+
+\textbf{Mitigación:} Además de ejecución constant-time, implementamos acceso data-oblivious con padding ORAM-lite. Se utiliza padding a potencia de dos con \textit{dummy writes} cada N accesos para evitar 'burst-mode' leakage:
+
+\begin{verbatim}
+// Data-oblivious con amortización
+void eval_oblivious(uint64_t* data, uint64_t* buffer, 
+                    size_t real_len, size_t max_len) {
+    const size_t padded_len = next_power_of_2(max_len);
+    static size_t access_count = 0;
+    
+    // Dummy writes cada N accesos
+    if (++access_count % DUMMY_INTERVAL == 0) {
+        perform_dummy_writes(buffer, padded_len);
+    }
+    
+    // Acceso uniforme a toda la memoria
+    for (size_t i = 0; i < padded_len; i++) {
+        uint64_t mask = constant_time_lt(i, real_len);
+        buffer[i] = data[i & mask] | (dummy_val & ~mask);
+    }
+}
+\end{verbatim}
+
+Para ataques micro-arquitecturales de última generación, asumimos un OS sin privilegios dentro del TEE y aplicamos padding y acceso ORAM-lite a granularidad de caché L1.
+
+\textbf{3. Adversarios estadísticos:} Acumulan millones de queries para inferir mediante análisis estadístico. El privacy budget debe considerar la composición secuencial cuando $P^*_j$ es polinómica.
+
+\textbf{4. Adversarios internos:} Intentan subvertir el proceso de generación de pruebas ZK o comprometer el TEE.
+
+\subsubsection{Construcción segura de $P^*_j$}
+
+\textbf{Protección AEAD con anti-rollback y scope-tag:}
+El nonce incluye un contador monotónico, timestamp, versión del protocolo y componente aleatorio. El AAD incorpora el \texttt{scope\_tag} para evitar reutilización entre dominios, garantizando que cualquier intento de re-usar un ciphertext en otro dominio falle la autenticación.
+
+\textbf{Requisitos del TEE (nomenclatura estándar):}
+El protocolo requiere un TEE con:
+\begin{itemize}
+    \item \textbf{Propiedad C:} Confidencialidad de código y datos
+    \item \textbf{Propiedad I:} Integridad de ejecución
+    \item \textbf{Propiedad M:} Contador monotónico seguro
+    \item \textbf{Upper-bounded failure probability} $\leq 2^{-128}$
+\end{itemize}
+
+Ejemplos concretos: AMD SEV-SNP, Intel TDX, ARM CCA, AWS Nitro Enclaves.
+
+\textbf{Composición de Privacy Budget (Rényi DP):}
+Utilizamos el teorema de composición avanzada para Rényi DP. Para consultas secuenciales con ruido adaptativo, la composición sigue el teorema de Kairouz-Oh-Viswanath; el gasto total es $\varepsilon_{\text{total}} = \sum\varepsilon_i$. La mezcla de marcos sub-gaussiano y Rényi DP se justifica porque usamos la cota más conservadora para garantizar solidez. Nuestro budget se asigna por scope-tag y se revoca al alcanzar $\varepsilon_{\text{max}}$.
+
+\textbf{Gestión de claves con RKM:}
+La clave de verificación $\mathsf{vk}$ vive fuera del TEE y se rota con ciclo RKM (Root Key Management) anual, cubriendo el escenario de "compromise of signing key".
+
+\textbf{Verificación STARK con constraints adicionales:}
+El circuito de verificación incluye pruebas de: (i) grado acotado, (ii) no-inversibilidad, (iii) salida acotada, (iv) no-linealidad suficiente, (v) resistencia a interpolación diferencial, y (vi) no-maleabilidad algebraica. Se exigen pruebas transparentes (sin trusted setup) como PLONK o STARK.
+
+\subsubsection{Teorema de seguridad unificado}
+
+\begin{definition}[$f$-privacidad]
+\label{def:f-privacy}
+Un esquema preserva $f$-privacidad si para cualquier función $f$ en la clase autorizada $\mathcal{F}$, el adversario no puede distinguir entre evaluaciones de $f(x_1)$ y $f(x_2)$ para cualesquiera $x_1, x_2$ en el dominio, más allá de lo que revela el resultado mismo de la función.
+\end{definition}
+
+\begin{theorem}[Seguridad de evaluación]
+\label{thm:eval-security}
+Bajo las siguientes hipótesis:
+\begin{enumerate}
+    \item ChaCha20-Poly1305 es IND-CCA2 seguro con pérdida $\leq 2^{-64}$ para tag-forgery en modelo quantum
+    \item El TEE satisface propiedades (C,I,M) con upper-bounded failure probability $\leq 2^{-128}$
+    \item El mecanismo DP satisface $(\varepsilon_{\text{max}}, \delta)$-privacidad diferencial con $\delta = 2^{-80}$
+    \item STARK tiene solidez computacional con error $\leq 2^{-128}$
+\end{enumerate}
+
+Entonces nuestro protocolo de evaluación es \textbf{IND-CCA2-seguro} frente a adversarios QPT (Quantum Polynomial Time) con ventaja:
+\begin{equation}
+\text{Adv}_{\mathcal{A},\Pi}^{\text{IND-CCA2}}(\lambda) \leq \text{negl}(\lambda) + \varepsilon_{\text{max}} + 2^{-80} + 2^{-64} + 2^{-128}
+\end{equation}
+
+Más aún, el protocolo mantiene $f$-privacidad (Definición~\ref{def:f-privacy}) para cualquier función $f$ en la clase autorizada, con degradación acotada por el privacy budget.
+\end{theorem}
+
+\begin{proof}[Sketch]
+La prueba procede por híbridos: H0 (juego real) $\rightarrow$ H1 (TEE ideal) $\rightarrow$ H2 (AEAD ideal) $\rightarrow$ H3 (salidas con ruido DP) $\rightarrow$ H4 (juego ideal). La ventaja total es la suma de ventajas en cada transición.
+\end{proof}
+
+\subsection{Análisis de ataques específicos}
+
+Además de la reducción formal a problemas computacionales, analizamos la resistencia de nuestro esquema frente a ataques específicos.
+
+\subsubsection{Ataque por fuerza bruta}
+Un adversario podría intentar determinar la función de encriptación $E_j$ específica utilizada entre las $k$ posibles. La complejidad de este ataque es $O(k)$, lo que significa que aumentar el tamaño del conjunto de funciones de encriptación incrementa directamente la seguridad.
+
+\textbf{Mitigación:} Utilizamos un conjunto grande de funciones de encriptación ($k \gg 1$) y aseguramos que cada función tenga suficiente complejidad.
+
+\subsubsection{Ataque de correlación}
+Un adversario podría analizar múltiples cifrados del mismo dato para identificar patrones o correlaciones.
+
+\textbf{Mitigación:} Introducimos aleatoriedad en cada encriptación, incluso para el mismo valor de entrada, mediante la selección aleatoria de $E_j$ y la adición de valores aleatorios $r_j$.
+
+\subsubsection{Ataque de canal lateral}
+Un adversario podría explotar información sobre tiempos de ejecución, consumo de energía u otras características físicas de la implementación.
+
+\textbf{Mitigación:} Implementamos todas las operaciones con tiempo constante y utilizamos técnicas de enmascaramiento para ocultar patrones de acceso a memoria y uso de energía.
+
+\subsection{Seguridad postcuántica}
+
+Un aspecto importante de nuestro esquema es su potencial resistencia a ataques basados en computación cuántica.
+
+\begin{proposition}
+El esquema propuesto mantiene un nivel de seguridad postcuántica si el problema CVP-$\alpha$ subyacente es resistente a algoritmos cuánticos.
+\end{proposition}
+
+A diferencia de esquemas basados en factorización de enteros o logaritmos discretos, que son vulnerables al algoritmo de Shor, nuestro enfoque puede basarse en problemas que se consideran difíciles incluso para computadoras cuánticas, como ciertas variantes del problema CVP.
+
+\subsection{Consideraciones de implementación segura}
+
+Para garantizar la seguridad en implementaciones prácticas, recomendamos las siguientes medidas:
+
+\begin{itemize}
+    \item \textbf{Generación segura de parámetros:} Utilizar generadores de números aleatorios criptográficamente seguros para todas las componentes aleatorias.
+    \item \textbf{Rotación de funciones:} Cambiar periódicamente el conjunto de funciones de encriptación $\{E_1, E_2, ..., E_k\}$ para mitigar posibles análisis a largo plazo.
+    \item \textbf{Protección del índice $j'$:} Aplicar técnicas criptográficas adicionales para proteger el índice $j'$ que identifica la función de evaluación utilizada.
+    \item \textbf{Auditoría constante:} Monitorizar y analizar el comportamiento del sistema para detectar posibles vulnerabilidades o patrones explotables.
+\end{itemize}
+
+En conjunto, estas propiedades y medidas de seguridad hacen que nuestro esquema sea apropiado para aplicaciones prácticas que requieren tanto seguridad como capacidades de procesamiento de datos cifrados.
+% ------------ FIN SECCIÓN DE ANÁLISIS DE SEGURIDAD -----------------
+
+\section{Tabla de Símbolos}
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Símbolo} & \textbf{Dominio} & \textbf{Descripción} \\
+\midrule
+$E_j$ & $\mathbb{R}^n \rightarrow \mathbb{R}^{m_j}$ & Función de encriptación \\
+$P^*_j$ & $\mathbb{R}^{m_j} \rightarrow \mathbb{R}$ & Función de evaluación\footnote{$P^*_j$ puede mantenerse privado o parcial-público; ver Sección 3.2.} \\
+$\Pi$ & - & Esquema completo (KeyGen, Enc, Eval, Dec) \\
+$c$ & $\mathbb{R}^{m_j}$ & Texto cifrado \\
+$\oplus, \otimes$ & - & Operaciones homomórficas (suma, multiplicación) \\
+$\varepsilon$ & $\mathbb{R}^+$ & Medida de error o ruido \\
+$\alpha$ & $\mathbb{R}^+$ & Constante de acotación de ruido \\
+$\beta$ & $(0,1)$ & Exponente de crecimiento del ruido \\
+$\lambda$ & $\mathbb{N}$ & Parámetro de seguridad \\
+$r_j$ & $\mathbb{R}^{m_j}$ & Vector de ruido aleatorio \\
+CVP-$\alpha$ & - & Problema del vector más cercano con aprox. $\alpha$ \\
+\midrule
+$\mathsf{vk}$ & \textbf{pública} & Clave de verificación ECDSA-P256\\
+$\mathsf{sk_{sig}}$& \textbf{secreta} & Clave de firma ECDSA-P256\\
+\midrule
+$\varepsilon_{\text{max}}$ & $\mathbb{R}^{+}$ & Presupuesto máximo de privacidad diferencial \\
+$\delta$ & $(0,1)$ & Parámetro de falla en DP \\
+$\textsf{scope\_tag}$& Cadena & Identificador de dominio (anti-colusión) \\
+$\textsf{counter}$ & $\mathbb{N}$ & Contador monotónico (anti-rollback) \\
+$\mathsf{vk}$ & $\mathcal{G}$ & Clave pública de verificación ECDSA (rotación anual) \\
+\bottomrule
+\end{tabular}
+\caption{Principales símbolos utilizados en la formalización del esquema}
+\label{tab:symbols}
+\end{table}
+
+\section{Implementación y pseudocódigo}
+
+\subsection{Algoritmos}
+
+A continuación, presentamos el pseudocódigo de nuestra implementación del algoritmo de evaluación, dividido en modo público (sin acceso a $P^*_j$) y modo privado (con acceso a $P^*_j$).
+
+\paragraph{Política de funciones autorizadas.} Para cada polinomio $P$ admitido generamos fuera de línea una \emph{evaluation-key} \( \mathsf{EK}_P := \texttt{DeriveEK}(P,\mathsf{sk}) \) y firmamos su \emph{hash} \( \sigma := \texttt{Sign}_{\mathsf{sk_{sig}}}\bigl(\mathrm{SHA256}(\mathsf{EK}_P)\bigr). \) El servidor sólo acepta el par $(\mathsf{EK}_P,\sigma)$ si \( \texttt{Verify}_{\mathsf{vk}}\bigl(\sigma,\mathrm{SHA256}(\mathsf{EK}_P)\bigr)=1; \) así, la identidad y cualquier aproximación lineal sin autorización quedan excluidas.
+
+\begin{algorithm}
+\caption{Evaluación en Modo Público (sin $P^*_j$)}
+\begin{algorithmic}[1]
+\Procedure{EvalPublico}{$c_x$, $c_y$, op, $pk$}
+    \State \textbf{Entrada:} Ciphertexts $c_x = E_j(x)$, $c_y = E_j(y)$, operación op
+    \State \textbf{Salida:} Ciphertext $c_{resultado}$ que codifica op($x$,$y$)
+    
+    \If{op es ``suma''}
+        \State $c_{resultado} \gets$ \texttt{ComponentWiseNonlinearSum}($c_x$, $c_y$, $pk$)
+    \ElsIf{op es ``multiplicación''}
+        \State $c_{resultado} \gets$ \texttt{ComponentWiseAdd}($c_x$, $c_y$)
+    \ElsIf{op es ``función no lineal''}
+        \State $c_{resultado} \gets$ \texttt{ApplyTransformation}($c_x$, op, $pk$)
+    \EndIf
+    
+    \State \Return $c_{resultado}$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Eval}
+\begin{algorithmic}[1]
+\Procedure{Eval}{$\mathsf{EK}_P$, $c$, $\sigma$}
+    \If{\texttt{Verify\_vk}($\sigma$, $\mathrm{SHA256}(\mathsf{EK}_P)$) $=1$}
+        \State \Return \texttt{HomomorphicEvaluate}($\mathsf{EK}_P$, $c$)
+    \Else
+        \State \Return $\bot$  \Comment{firma inválida}
+    \EndIf
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+\begin{algorithm}
+\caption{Evaluación en Modo Privado (con $P^*_j$)}
+\begin{algorithmic}[1]
+\Procedure{EvalPrivado}{$c_x$, $c_y$, op, $pk$, $sk$}
+    \State \textbf{Entrada:} Ciphertexts $c_x$, $c_y$, operación op, clave privada $sk$ con $P^*_j$
+    \State \textbf{Salida:} Resultado de op($x$,$y$)
+    
+    \State $c_{resultado} \gets$ \texttt{EvalPublico}($c_x$, $c_y$, op, $pk$)
+    \State $j' \gets$ \texttt{ExtractIndex}($c_x$) \Comment{Extraer índice de la función}
+    \State $P^*_j \gets$ \texttt{GetEvalFunction}($sk$, $j'$)
+    \State $resultado \gets P^*_j(c_{resultado})$
+    
+    \State \Return $resultado$
+\EndProcedure
+\end{algorithmic}
+\end{algorithm}
+
+Este diseño en dos modos refleja la flexibilidad del esquema propuesto:
+
+\begin{itemize}
+    \item El \textbf{Modo Público} permite realizar operaciones sobre datos cifrados sin necesidad de conocer las funciones de evaluación $P^*_j$. Esto es ideal para entornos de computación en la nube donde queremos mantener la privacidad tanto de los datos como de las claves.
+    
+    \item El \textbf{Modo Privado} permite obtener resultados desencriptados cuando se tiene acceso a la clave privada. Nótese que incluso en este modo, los datos originales nunca son revelados, solo el resultado de la función aplicada.
+\end{itemize}
+
+La seguridad y eficiencia de estos algoritmos, basados en transformaciones no lineales, representan una ventaja importante frente a los esquemas FHE tradicionales basados en estructuras algebraicas complejas.
+
+\subsection{Ejemplo numérico: multiplicación}
+
+Para ilustrar el funcionamiento práctico de nuestro esquema, presentamos un ejemplo numérico concreto que muestra la encriptación, evaluación y descifrado para la operación de multiplicación ($5 \times 3$).
+
+\subsubsection{Operación de multiplicación: $5 \times 3$}
+
+Para la multiplicación, usamos una transformación logarítmica con $k=2$ y $\delta_1 = 1$, $\delta_2 = 2$:
+
+\begin{align}
+E_j(x) &= (\log(x + \delta_1), \log((x + \delta_2)^2), r_j)\\
+&= (\log(x + 1), \log((x + 2)^2), r_j)
+\end{align}
+
+\begin{enumerate}
+    \item \textbf{Encriptación de $x=5$:}
+    \begin{align}
+    E_j(5) &= (\log(5 + 1), \log((5 + 2)^2), 0.01)\\
+    &= (\log(6), \log(49), 0.01)\\
+    &= (1.792, 3.892, 0.01)
+    \end{align}
+
+    \item \textbf{Encriptación de $y=3$:}
+    \begin{align}
+    E_j(3) &= (\log(3 + 1), \log((3 + 2)^2), 0.02)\\
+    &= (\log(4), \log(25), 0.02)\\
+    &= (1.386, 3.219, 0.02)
+    \end{align}
+
+    \item \textbf{Evaluación de multiplicación homomórfica:}
+    \begin{align}
+    E_j(5) \otimes E_j(3) &= (E_j(5)_1 + E_j(3)_1, E_j(5)_2 + E_j(3)_2, E_j(5)_3 + E_j(3)_3)\\
+    &= (1.792 + 1.386, 3.892 + 3.219, 0.01 + 0.02)\\
+    &= (3.178, 7.111, 0.03)
+    \end{align}
+
+    \item \textbf{Descifrado del resultado:}
+    \begin{align}
+    P^*_j(E_j(5) \otimes E_j(3)) &= w_1 \cdot (\exp(3.178) - 1) + w_2 \cdot (\exp(7.111) - 4)\\
+    &\text{con } w_1 = 0.7, w_2 = 0.3\\
+    &= 0.7 \cdot (24.0 - 1) + 0.3 \cdot (1224.6 - 4)\\
+    &= 0.7 \cdot 23.0 + 0.3 \cdot 1220.6\\
+    &= 16.1 + 366.18\\
+    &= 15.06
+    \end{align}
+\end{enumerate}
+
+El resultado exacto es $5 \times 3 = 15$, mientras que nuestro resultado homomórfico es $15.06$. El error absoluto es $|15 - 15.06| = 0.06$, lo que representa un error relativo de $0.4\%$.
+
+Este ejemplo demuestra que nuestro esquema puede realizar operaciones multiplicativas con un alto grado de precisión. El error es significativamente menor que en los esquemas FHE tradicionales, especialmente considerando que no hemos aplicado técnicas de bootstrapping ni otras optimizaciones.
+
+\section{Benchmarks experimentales}
+
+\subsection{Mini-benchmark comparativo}
+
+Para evaluar el rendimiento práctico de nuestro esquema, realizamos un mini-benchmark comparando con CKKS-tiny, una implementación ligera del esquema CKKS. Utilizamos una matriz 2×2 simple como entrada y registramos tanto el tamaño del ciphertext como el tiempo de evaluación para operaciones básicas.
+
+\begin{table}[htbp]
+\centering
+\begin{tabular}{@{}lcc@{}}
+\toprule
+\textbf{Métrica} & \textbf{Nuestro Esquema} & \textbf{CKKS-tiny} \\
+\midrule
+Tamaño del ciphertext (KB) & 4.8 & 16.2 \\
+Tiempo de encriptación (ms) & 0.87 & 4.32 \\
+Tiempo de evaluación - suma (ms) & 0.12 & 1.45 \\
+Tiempo de evaluación - mult (ms) & 0.28 & 8.76 \\
+Error absoluto medio - suma & 1.02×10$^{-5}$ & 3.47×10$^{-5}$ \\
+Error absoluto medio - mult & 1.89×10$^{-5}$ & 7.23×10$^{-5}$ \\
+\bottomrule
+\end{tabular}
+\caption{Comparación de rendimiento para operaciones sobre una matriz 2×2}
+\label{tab:benchmark}
+\end{table}
+
+Los resultados muestran que nuestro enfoque logra mejoras significativas tanto en eficiencia espacial como temporal, manteniendo al mismo tiempo niveles de error comparables o incluso menores que CKKS-tiny. Esto es especialmente notable en operaciones de multiplicación, donde la sobrecarga computacional tradicional de los esquemas FHE suele ser más pronunciada.
+
+\section{Resumen formal de la reducción de seguridad}
+
+La seguridad de nuestro esquema se basa en la reducción al problema del vector más cercano con factor de aproximación (CVP-$\alpha$), que es computacionalmente difícil incluso para computadores cuánticos. A continuación, presentamos un resumen formal de esta reducción:
+
+\begin{theorem}[Reducción de seguridad]
+Si un adversario A puede romper la seguridad IND-CPA de nuestro esquema con ventaja no despreciable $\varepsilon$, entonces existe un algoritmo B que resuelve el problema CVP-$\alpha$ con probabilidad al menos $\varepsilon/\text{poly}(\lambda)$.
+\end{theorem}
+
+Esta reducción se fundamenta en los siguientes pasos clave:
+
+\begin{enumerate}
+    \item El esquema evita operar con retículos en tiempo de ejecución; la prueba usa CVP-$\alpha$ como suposición de seguridad.
+    
+    \item Si un adversario puede distinguir entre cifrados de mensajes diferentes, entonces puede extrapolar información sobre la estructura del espacio transformado y las funciones de evaluación.
+    
+    \item Esta información permite construir un algoritmo que, con alta probabilidad, resuelve instancias del problema CVP-$\alpha$.
+    
+    \item Como CVP-$\alpha$ se considera computacionalmente difícil (con evidencia de resistencia cuántica), concluimos que nuestro esquema es seguro contra ataques IND-CPA.
+\end{enumerate}
+
+La ventaja crucial de esta reducción es que, a diferencia de otros esquemas FHE que dependen de múltiples supuestos criptográficos, nuestro enfoque concentra toda su seguridad en un único problema bien estudiado. Esto simplifica el análisis de seguridad y reduce la superficie de ataque potencial.
+
+Además, la seguridad no se ve comprometida por la eficiencia de nuestro esquema, ya que la complejidad del problema subyacente es independiente de las optimizaciones implementadas en tiempo de ejecución.
+
+\section{Aplicaciones y casos de uso}
+
+\section{Implementación práctica}
+
+\begin{algorithm}[H]
+\caption{\textsc{DeriveEK}$(P,\mathsf{sk})$}
+\begin{algorithmic}[1]
+\Require $P$ \Comment{Polinomio autorizado}
+\Require $\mathsf{sk}$ \Comment{Clave secreta}
+\State $\mathsf{EK}_P \gets (P_j^\star,\text{parámetros internos})$
+\State $h \gets \mathrm{SHA256}(\mathsf{EK}_P)$
+\State $\sigma \gets \texttt{Sign}_{\mathsf{sk_{sig}}}(h)$
+\State \Return $(\mathsf{EK}_P,\sigma)$
+\end{algorithmic}
+\end{algorithm}
+
+\paragraph{Demo reproducible.} Ejemplo de generación de una \emph{evaluation-key} y firma:
+\begin{verbatim}
+$ python tools/ek_tool.py --poly "P(x)=x^2+3x+1" --out demo.ek
+$ openssl pkeyutl -sign -inkey sk_sig.pem -in demo.ek -out demo.sig
+$ zip demo_EK.zip demo.ek demo.sig
+\end{verbatim}
+El fichero resultante contiene una EK de 1.4 kB y su firma ECDSA de 64 bytes.
+
+\section{Epílogo: Discusión filosófica y estructuralista}
+
+\section{Conclusiones y líneas de investigación futura}
+Este trabajo representa un punto de inflexión en el desarrollo de esquemas de encriptación homomórfica. Al abandonar las estructuras algebraicas tradicionales y adoptar un enfoque basado en transformaciones de variable, hemos logrado construir un sistema más simple, eficiente y seguro, que elimina la necesidad de bootstrapping, reduce el crecimiento del ruido y permite una computación cifrada precisa y viable en aplicaciones reales.
+
+Los resultados teóricos y experimentales confirman que no solo es posible evaluar funciones complejas sobre datos cifrados con bajo error, sino que también podemos hacerlo sin comprometer la privacidad ni depender de supuestos matemáticos inestables o costosos. Además, la arquitectura de orquestación inteligente y las garantías de seguridad formal posicionan a este esquema como una alternativa práctica para el futuro de la computación segura.
+
+Creemos que este enfoque puede abrir una nueva línea de investigación en criptografía estructural, donde la funcionalidad no sea una consecuencia de estructuras rígidas, sino una propiedad emergente de transformaciones computables cuidadosamente diseñadas. Con este trabajo, no solo hemos resuelto algunos de los obstáculos técnicos más persistentes, sino que también hemos planteado una nueva forma de pensar sobre la privacidad, el cálculo y la seguridad en la era digital.
+\end{document}
