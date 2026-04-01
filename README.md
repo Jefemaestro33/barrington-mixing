@@ -69,6 +69,10 @@ Run any script directly:
 python scripts/01_p9_ambivalence_verification.py
 ```
 
+## TODO
+
+- [ ] Formalizar la prueba algebraica del Lemma de Direction Mixing (Lemma 3 / `lem:mixing`) — actualmente demostrado por enumeración exhaustiva. Una prueba algebraica cerrada fortalecería el resultado y potencialmente generaliza a profundidad arbitraria.
+
 ## Submission Status
 
 - **IACR Communications in Cryptology (CiC):** Submitted 2026-03-31 (Submission #7, under review)
