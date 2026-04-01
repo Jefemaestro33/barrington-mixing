@@ -17,6 +17,10 @@ ofuscacion/
 │   ├── paper.tex           # Extended thesis source
 │   ├── referencias.bib     # Bibliography
 │   └── Spectral_Contraction_and_T_Independence_in_Barrington_Branching_Programs.pdf
+├── submission-CiC/
+│   ├── Smain_iacrcc.tex    # Formatted for IACR Communications in Cryptology
+│   ├── iacrcc.cls          # IACR CiC document class
+│   └── refs.bib            # Bibliography
 └── scripts/
     ├── 01_p9_ambivalence_verification.py
     ├── 02_p13_collision_exhaustive.py
