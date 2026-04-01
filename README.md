@@ -69,6 +69,11 @@ Run any script directly:
 python scripts/01_p9_ambivalence_verification.py
 ```
 
+## Submission Status
+
+- **IACR Communications in Cryptology (CiC):** Submitted 2026-03-31 (Submission #7, under review)
+- **IACR ePrint:** Pending
+
 ## License
 
 MIT License. See [LICENSE](LICENSE).
