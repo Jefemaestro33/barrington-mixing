@@ -412,6 +412,36 @@ representation contributes nothing to the Diaconis--Shahshahani bound.
 The sum thus runs over $5$ (not $6$) non-trivial representations.
 \end{remark}
 
+\begin{proposition}[Contraction in the remaining representations]
+\label{prop:other_reps}
+For all five non-trivial, non-sign representations $\rho$ of $S_5$, the
+operator norm $\opn{\Dhat_3(\rho)}$ is strictly less than $1$ for every
+valid level-$3$ configuration. The representation $(4,1)$ is the unique
+bottleneck:
+\begin{center}
+\begin{tabular}{lcccl}
+\toprule
+$\rho$ & $d_\rho$ & Leaf rank & $\max\opn{\Dhat_3(\rho)}$ & First level $< 1$ \\
+\midrule
+$(4,1)$     & 4 & 3 & $3.53 \times 10^{-2}$ & Level $3$ \\
+$(3,2)$     & 5 & 3 & $1.77 \times 10^{-5}$ & Level $2$ \\
+$(3,1,1)$   & 6 & 3 & $1.05 \times 10^{-5}$ & Level $2$ \\
+$(2,2,1)$   & 5 & 2 & $< 10^{-10}$          & Level $1$ \\
+$(2,1,1,1)$ & 4 & 1 & $< 10^{-10}$          & Level $1$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+The representations $(2,1,1,1) = \mathrm{sign} \otimes (4,1)$ and
+$(2,2,1) = \mathrm{sign} \otimes (3,2)$ have leaf projections of rank $1$
+and $2$ respectively. Their level-$1$ operator norms are at most $(1/2)^3 = 1/8$,
+so they contract immediately. The representations $(3,2)$ and $(3,1,1)$
+have rank-$3$ leaf projections like $(4,1)$, but lack the simplex
+obstruction (\Cref{obs:simplex}): all $405$ level-$2$ quadruples have
+operator norm $< 0.085$, so they contract one level earlier.
+\emph{Verified exhaustively over all $73810$ level-$3$ configurations
+for each representation} (Script~$13$ in the accompanying code).
+\end{proposition}
+
 We focus on the bottleneck representation $(4,1)$.
 
 
@@ -639,7 +669,7 @@ For all Barrington branching programs for point functions $\CC_T$ over
 $\{0,1\}^\ell$ with $\ell = 2^d$, $d \geq 3$:
 \begin{enumerate}[label=(\alph*),nosep]
 \item $D_T = D_{T'}$ for all $T, T' \in \{0,1\}^\ell$.
-\item $\dtv(D_T, \mathrm{Uniform}(S_5)) \leq 2 \cdot \lambda^{4^{d-3}}$,
+\item $\dtv(D_T, \mathrm{Uniform}(S_5)) \leq 6 \cdot \lambda^{4^{d-3}}$,
   where $\lambda = 0.0354$.
 \item In particular, $\dtv(D_T, U) = \negl(\ell)$.
 \end{enumerate}
@@ -651,13 +681,29 @@ Part (a) is \Cref{thm:t-indep}. For part (b), by \Cref{thm:ds}:
 \dtv(D_T, U)^2 \leq \frac{1}{4} \sum_{\rho \neq \mathrm{triv}} d_\rho \cdot
 \frob{\Dhat(\rho)}^2.
 \]
-The dominant term is $d_{(4,1)} \cdot \frob{\Dhat(4,1)}^2 = 4 \cdot \frob{\Dhat(4,1)}^2$.
-Since $\frob{M}^2 \leq d \cdot \opn{M}^2$ for a $d \times d$ matrix:
+By \Cref{rem:sign}, the sign representation contributes zero.
+For each remaining representation $\rho$ of dimension $d_\rho$,
+\Cref{prop:other_reps} gives a base case
+$\opn{\Dhat_3(\rho)} \leq \lambda_\rho < 1$ for all valid level-$3$
+configurations. The submultiplicativity argument of \Cref{thm:induction}
+applies to each $\rho$ independently (it uses only $\opn{M^\top} = \opn{M}$
+and submultiplicativity, which hold in any representation), yielding
+$\opn{\Dhat_d(\rho)} \leq \lambda_\rho^{4^{d-3}}$.
+Since $\frob{M}^2 \leq d_\rho \cdot \opn{M}^2$:
 \[
-\frob{\Dhat(4,1)}^2 \leq 4 \cdot \opn{\Dhat(4,1)}^2 \leq 4\lambda^{2 \cdot 4^{d-3}}.
+\sum_{\rho} d_\rho \cdot \frob{\Dhat(\rho)}^2
+\leq \sum_{\rho} d_\rho^2 \cdot \lambda_\rho^{2 \cdot 4^{d-3}}
+\leq \Bigl(\sum_{\rho} d_\rho^2\Bigr) \cdot \lambda^{2 \cdot 4^{d-3}},
 \]
-Therefore $\dtv(D_T, U)^2 \leq 4 \cdot \lambda^{2 \cdot 4^{d-3}}$, giving
-$\dtv(D_T, U) \leq 2 \cdot \lambda^{4^{d-3}}$.
+where $\lambda = \max_\rho \lambda_\rho = \lambda_{(4,1)} \approx 0.0353$
+is the bottleneck (\Cref{prop:other_reps}). Since
+$\sum_\rho d_\rho^2 = 4^2 + 5^2 + 6^2 + 5^2 + 4^2 = 118$:
+\[
+\dtv(D_T, U)^2 \leq \frac{118}{4} \cdot \lambda^{2 \cdot 4^{d-3}},
+\qquad
+\dtv(D_T, U) \leq \sqrt{\tfrac{118}{4}} \cdot \lambda^{4^{d-3}}
+< 6 \cdot \lambda^{4^{d-3}}.
+\]
 For part (c), since $\lambda < 1$ and $4^{d-3}$ grows super-exponentially in
 $d = \log_2 \ell$, the bound is negligible in $\ell$.
 \end{proof}
@@ -666,12 +712,12 @@ For concrete values:
 \begin{center}
 \begin{tabular}{cccc}
 \toprule
-$\ell$ & Depth $d$ & $\opn{\Dhat}$ bound & $\dtv$ bound \\
+$\ell$ & Depth $d$ & $\opn{\Dhat_{(4,1)}}$ bound & $\dtv$ bound \\
 \midrule
-$8$   & $3$ & $3.54 \times 10^{-2}$ & $7.07 \times 10^{-2}$ \\
-$16$  & $4$ & $1.55 \times 10^{-6}$ & $3.11 \times 10^{-6}$ \\
-$32$  & $5$ & $5.83 \times 10^{-24}$ & $1.17 \times 10^{-23}$ \\
-$64$  & $6$ & $1.15 \times 10^{-93}$ & $2.30 \times 10^{-93}$ \\
+$8$   & $3$ & $3.53 \times 10^{-2}$ & $2.12 \times 10^{-1}$ \\
+$16$  & $4$ & $1.55 \times 10^{-6}$ & $9.33 \times 10^{-6}$ \\
+$32$  & $5$ & $5.83 \times 10^{-24}$ & $3.50 \times 10^{-23}$ \\
+$64$  & $6$ & $1.15 \times 10^{-93}$ & $6.90 \times 10^{-93}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -777,7 +823,7 @@ The proofs of \Cref{thm:level01,thm:level12} use exact rational arithmetic
 standard representation. \Cref{thm:level23} uses numerical computation
 (\texttt{numpy}) over all $73810$ valid configurations.
 
-The full verification suite consists of $12$ scripts,
+The full verification suite consists of $13$ scripts,
 publicly available at:
 \begin{center}
 \url{https://github.com/Jefemaestro33/barrington-mixing}
@@ -800,12 +846,15 @@ Script & Content & Method \\
 10 & Complete spectral contraction proof & Exact + numerical \\
 11 & Eigenvector analysis (simplex discovery) & Numerical \\
 12 & Level-$3$ exhaustive verification & Numerical \\
+13 & All-representations contraction verification & Numerical \\
 \bottomrule
 \end{tabular}
 \end{center}
 
-Scripts 10--12 collectively verify the main theorem in under $15$ seconds
-on a standard laptop (the exact-arithmetic steps in Script~10 dominate).
+Scripts 10--13 collectively verify the main theorem in under $20$ seconds
+on a standard laptop. Script~13 verifies \Cref{prop:other_reps}:
+operator-norm contraction for all five non-trivial, non-sign representations
+across all $73810$ level-$3$ configurations.
 Scripts~01--09 provide additional cross-validation and extensions.
 
 
@@ -914,7 +963,7 @@ A.~Sahai and B.~Waters.
 \newblock In \emph{STOC}, pages 475--484, 2014.
 
 \bibitem{WW21}
-D.~Wee and D.~Wichs.
+H.~Wee and D.~Wichs.
 \newblock Candidate obfuscation via oblivious LWE sampling.
 \newblock In \emph{EUROCRYPT}, 2021.
 

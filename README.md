@@ -33,7 +33,8 @@ ofuscacion/
     ├── 09_io_investigation.py
     ├── 10_spectral_contraction_proof.py
     ├── 11_eigenvector_analysis.py
-    └── 12_level3_exhaustive_verification.py
+    ├── 12_level3_exhaustive_verification.py
+    └── 13_all_representations_contraction.py
 ```
 
 ## Scripts Overview
@@ -52,6 +53,7 @@ ofuscacion/
 | 10 | `spectral_contraction_proof` | Spectral contraction proof verification |
 | 11 | `eigenvector_analysis` | Eigenvector structure analysis |
 | 12 | `level3_exhaustive_verification` | Level-3 exhaustive security verification |
+| 13 | `all_representations_contraction` | Spectral contraction for all irreps of S_5 |
 
 ## Requirements
 
@@ -76,7 +78,7 @@ python scripts/01_p9_ambivalence_verification.py
 ## Submission Status
 
 - **IACR Communications in Cryptology (CiC):** Submitted 2026-03-31 (Submission #7, under review)
-- **IACR ePrint:** Pending
+- **IACR ePrint:** Rejected (gap in Main Theorem proof — now fixed, see Script 13)
 
 ## License
 
