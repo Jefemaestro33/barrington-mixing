@@ -130,7 +130,7 @@ by constructions for specific function
 classes: lockable obfuscation for point functions from
 LWE~\cite{GKW17,WZ17}, conjunction obfuscation from noisy encodings
 and LPN~\cite{BKMPRS18,BLMZ19}, and entropic Ring-LWE
-approaches~\cite{BKVWW18}.  The landmark result of Jain, Lin, and
+approaches~\cite{BVWW16}.  The landmark result of Jain, Lin, and
 Sahai~\cite{JLS21} achieved iO for general circuits from well-founded
 assumptions, departing from the branching-program paradigm.  Recent
 lattice-based candidates~\cite{BDGM20,WW21,HJL25} use matrix groups
@@ -276,10 +276,14 @@ dimension $d_\rho$, $\widehat{Q}(\rho) = \sum_{g \in G} Q(g) \rho(g)$ is the
 Fourier transform, and $\frob{\cdot}$ denotes the Frobenius norm.
 \end{theorem}
 
-For $S_5$, since the standard representation $(4,1)$ has the largest character
-value at transpositions ($\chi_{(4,1)}(\sigma)/d_{(4,1)} = 2/4 = 1/2$, compared
-to $\leq 1/5$ for other non-trivial representations), it is the \emph{mixing
-bottleneck}. The remaining representations contract faster, so it suffices to
+For $S_5$, the standard representation $(4,1)$ is the \emph{mixing
+bottleneck}. Although $(2,1,1,1) = \mathrm{sign} \otimes (4,1)$ shares the
+same normalized character ratio $\abs{\chi(\sigma)}/d_\rho = 1/2$, its leaf
+projection $\frac{1}{2}(I - \rho_{(4,1)}(\sigma))$ has rank~$1$ (versus
+rank~$3$ for $(4,1)$), causing it to contract at level~$1$ with operator
+norm $\leq (1/2)^3 = 1/8$. The remaining representations satisfy
+$\abs{\chi(\sigma)}/d_\rho \leq 1/5$ and likewise contract earlier
+(\Cref{prop:other_reps}). It therefore suffices to
 bound $\frob{\Dhat(4,1)}^2$.
 
 
@@ -408,7 +412,7 @@ bottleneck:
 \toprule
 $\rho$ & $d_\rho$ & Leaf rank & $\max\opn{\Dhat_3(\rho)}$ & First level $< 1$ \\
 \midrule
-$(4,1)$     & 4 & 3 & $3.53 \times 10^{-2}$ & Level $3$ \\
+$(4,1)$     & 4 & 3 & $3.54 \times 10^{-2}$ & Level $3$ \\
 $(3,2)$     & 5 & 3 & $1.77 \times 10^{-5}$ & Level $2$ \\
 $(3,1,1)$   & 6 & 3 & $1.05 \times 10^{-5}$ & Level $2$ \\
 $(2,2,1)$   & 5 & 2 & $< 10^{-10}$          & Level $1$ \\
@@ -699,10 +703,10 @@ For concrete values:
 \toprule
 $\ell$ & Depth $d$ & $\opn{\Dhat_{(4,1)}}$ bound & $\dtv$ bound \\
 \midrule
-$8$   & $3$ & $3.53 \times 10^{-2}$ & $2.12 \times 10^{-1}$ \\
-$16$  & $4$ & $1.55 \times 10^{-6}$ & $9.33 \times 10^{-6}$ \\
-$32$  & $5$ & $5.83 \times 10^{-24}$ & $3.50 \times 10^{-23}$ \\
-$64$  & $6$ & $1.15 \times 10^{-93}$ & $6.90 \times 10^{-93}$ \\
+$8$   & $3$ & $3.54 \times 10^{-2}$ & $2.12 \times 10^{-1}$ \\
+$16$  & $4$ & $1.57 \times 10^{-6}$ & $9.42 \times 10^{-6}$ \\
+$32$  & $5$ & $6.08 \times 10^{-24}$ & $3.65 \times 10^{-23}$ \\
+$64$  & $6$ & $1.37 \times 10^{-93}$ & $8.21 \times 10^{-93}$ \\
 \bottomrule
 \end{tabular}
 \end{center}
@@ -719,7 +723,7 @@ A conjunction $\CC_{T,W}$ with target $T \in \{0,1\}^\ell$ and wildcard set
 $W \subseteq [\ell]$ outputs $1$ iff $x_i = T_i$ for all $i \notin W$.
 In the branching program, wildcard positions output $\sigma_i$ for both
 bit values.  Obfuscation of conjunctions has been studied
-extensively~\cite{BKVWW18,BKMPRS18,BLMZ19}; our results provide an
+extensively~\cite{BVWW16,BKMPRS18,BLMZ19}; our results provide an
 information-theoretic complement to the computational security guarantees
 in that literature.
 
