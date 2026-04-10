@@ -342,6 +342,7 @@ def verify_conjecture(n, verbose=True):
     # Summary
     # ===================================================================
     elapsed = time.time() - T0
+    conjecture_holds = all_match and len(set(dir_counts)) == 1 and n_same_dir == 0
 
     results = {
         'n': n,
@@ -363,8 +364,6 @@ def verify_conjecture(n, verbose=True):
         'conjecture_holds': conjecture_holds,
         'elapsed': elapsed,
     }
-
-    conjecture_holds = all_match and len(set(dir_counts)) == 1 and n_same_dir == 0
 
     if verbose:
         print(f"\n{'='*70}")
